@@ -50,6 +50,11 @@ class TestP0(unittest.TestCase):
         self.check_expression(RE2, "023", False)
         self.check_expression(RE2, "1.5e-7", False)
 
+
+        self.check_expression(RE2, "23.", True)
+        self.check_expression(RE2, "0.", True)
+        self.check_expression(RE2, "0.0000", True)
+
     def test_exercise_3(self) -> None:
         self.check_expression(RE3, "www.uam.es/", True)
         self.check_expression(RE3, "www.uam.es", False)
@@ -78,7 +83,6 @@ class TestP0(unittest.TestCase):
         self.check_expression(RE5, "", False)
         self.check_expression(RE5, "7*(3+12-36)", True)
         self.check_expression(RE5, "7*(3+12-(2-5)/36)", False)
-
 
 if __name__ == '__main__':
     unittest.main()
