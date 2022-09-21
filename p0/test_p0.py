@@ -65,6 +65,8 @@ class TestP0(unittest.TestCase):
         self.check_expression(RE3, "www.uam.es/hola/adios", True)
         self.check_expression(RE3, "moodle.uam.es/hola/adios/", True)
 
+        self.check_expression(RE3, "moodlecuam.es/", False)
+
     def test_exercise_4(self) -> None:
         self.check_expression(RE4, "1+2+3+4", True)
         self.check_expression(RE4, "124/3+45*2-18", True)

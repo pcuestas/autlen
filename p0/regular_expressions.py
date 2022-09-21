@@ -12,7 +12,7 @@ Autores: Pablo Cuesta Sierra y Álvaro Zamanillo Sáez
 """
 RE1 = "[abc]*(a[abc]*b|b[abc]*a)[abc]*"
 RE2 = "0[.]?|-?([1-9][0-9]*[.]?[0-9]*|0?[.][0-9]+)"
-RE3 = "(www.uam.es|moodle.uam.es)[/]([a-z]+[/]?)*"
+RE3 = "(www[.]uam[.]es|moodle[.]uam[.]es)[/]([a-z]+[/]?)*"
 RE4 = "([1-9][0-9]*[-+*/])*[1-9][0-9]*"
 RE5 = "(({}|[(]{}[)])[-+*/])*({}|[(]{}[)])".format(RE4, RE4, RE4, RE4)
 
