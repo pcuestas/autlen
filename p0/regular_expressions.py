@@ -7,6 +7,8 @@ RE0 = "[ab]*a"
 """
 Completa a continuacion las expresiones regulares para los
 ejercicios 1-5:
+
+Autores: Pablo Cuesta Sierra y Álvaro Zamanillo Sáez
 """
 RE1 = "[abc]*(a[abc]*b|b[abc]*a)[abc]*"
 RE2 = "0[.]?|-?([1-9][0-9]*[.]?[0-9]*|0?[.][0-9]+)"
