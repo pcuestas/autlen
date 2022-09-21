@@ -1,0 +1,245 @@
+.
+======================================================================
+FAIL: test_exercise_1 (__main__.TestP0) (string='ab')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_1 (__main__.TestP0) (string='ba')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_1 (__main__.TestP0) (string='accb')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_1 (__main__.TestP0) (string='bcca')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_1 (__main__.TestP0) (string='bbcbbbca')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_1 (__main__.TestP0) (string='abcaabbcca')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_1 (__main__.TestP0) (string='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: True != False
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='2344')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='2344.')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='2344.0012')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='0.0012')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='0')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='.023')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='-2344')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='-2344.')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='-2344.0012')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='-0.0012')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='-.023')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_2 (__main__.TestP0) (string='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: True != False
+
+======================================================================
+FAIL: test_exercise_3 (__main__.TestP0) (string='www.uam.es/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_3 (__main__.TestP0) (string='moodle.uam.es/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_3 (__main__.TestP0) (string='www.uam.es/hola/adios')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_3 (__main__.TestP0) (string='moodle.uam.es/hola/adios/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_4 (__main__.TestP0) (string='1+2+3+4')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_4 (__main__.TestP0) (string='124/3+45*2-18')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_4 (__main__.TestP0) (string='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: True != False
+
+======================================================================
+FAIL: test_exercise_5 (__main__.TestP0) (string='1+2+3+4')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_5 (__main__.TestP0) (string='124/3+45*2-18')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+======================================================================
+FAIL: test_exercise_5 (__main__.TestP0) (string='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: True != False
+
+======================================================================
+FAIL: test_exercise_5 (__main__.TestP0) (string='7*(3+12-36)')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pablo/rep/autlen/p0/test_p0.py", line 15, in check_expression
+    self.assertEqual(bool(match), expected)
+AssertionError: False != True
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.003s
+
+FAILED (failures=30)
