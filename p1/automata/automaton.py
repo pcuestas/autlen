@@ -36,6 +36,9 @@ class State():
 
     def __repr__(self) -> str:
         return (
+            f"{type(self).__name__}({self.name!r})"
+        )
+        return (
             f"{type(self).__name__}({self.name!r}, is_final={self.is_final!r}, transitions={self.transitions!r})"
         )
 

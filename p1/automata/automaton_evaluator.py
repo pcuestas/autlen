@@ -26,6 +26,8 @@ class FiniteAutomatonEvaluator():
         current_states: Set[State] = {
             self.automaton.states[0],  
         }
+        self._states_by_name = {state.name:state for state in self.automaton.states}
+        self.closures = {}
         self._compute_closures()
         self._complete_lambdas(current_states)
         self.current_states = current_states
@@ -44,8 +46,8 @@ class FiniteAutomatonEvaluator():
 
         for state in self.current_states:
             for transition in state.transitions:
-                if transition.symbol == symbol:
-                    new_states.add(transition.state)
+                if transition.symbol == symbol :
+                    new_states.add(self._get_state(transition.state))
 
         self._complete_lambdas(new_states)
         self.current_states = new_states
@@ -57,25 +59,21 @@ class FiniteAutomatonEvaluator():
         Completes the self.closures dictionary with the closure 
         of each element.
         '''
-
-        for state in self.automaton.states:
-            closure = set([state])
-            round_states = set([state])
-          
+        for expand_state in self.automaton.states:
+            closure = set()
+            round_states = set([expand_state])
+    
             while round_states:
-                closure.union(round_states)
+                closure.update(round_states)
                 new_states = set()
                 for state in round_states:
-                    new_states.add(transition.state for transition in 
-                        filter(
-                            lambda t : (not t.symbol), 
-                            state.transitions
-                        )
-                    )
+                    new_states.update(self._get_state(transition.state) for transition in state.transitions if not transition.symbol)
                 round_states = new_states
 
-            self.closures[state] = closure
-    
+            self.closures[expand_state] = closure
+
+    def _get_state(self, name:str) -> State :
+        return self._states_by_name[name] 
 
     def _complete_lambdas(self, set_to_complete: Set[State]) -> None:
         """
@@ -87,9 +85,9 @@ class FiniteAutomatonEvaluator():
         completed = set()
 
         for state in set_to_complete:
-            completed.union(self.closures[state])
+            completed.update(self.closures[state])
         
-        set_to_complete.union(completed)
+        set_to_complete.update(completed)
         
     def process_string(self, string: str) -> None:
         """
@@ -106,7 +104,7 @@ class FiniteAutomatonEvaluator():
 
     def is_accepting(self) -> bool:
         """Check if the current state is an accepting one."""
-        
+
         return any([state.is_final for state in self.current_states])
         
 
