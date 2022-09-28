@@ -27,6 +27,8 @@ class FiniteAutomatonEvaluator():
             self.automaton.states[0],  
         }
         self._states_by_name = {state.name:state for state in self.automaton.states}
+        transitions = sum([state.transitions for state in self.automaton.states], [])
+        self._alphabet = set(transition.symbol for transition in transitions)
         self.closures = {}
         self._compute_closures()
         self._complete_lambdas(current_states)
@@ -41,6 +43,8 @@ class FiniteAutomatonEvaluator():
             symbol: Symbol to consume.
 
         """
+        if symbol not in self._alphabet:
+            raise Exception #TODO CREAR EXCEPCION
 
         new_states = set()
 
@@ -53,30 +57,28 @@ class FiniteAutomatonEvaluator():
 
         self._complete_lambdas(new_states)
         self.current_states = new_states
-
-        #Lanzar excepcion si el simbolo no pertenece al abecedario 
     
     def _compute_closures(self):
         '''
         Completes the self.closures dictionary with the closure 
         of each element.
         '''
-        for expand_state in self.automaton.states:
+        for closure_state in self.automaton.states:
             closure = set()
-            round_states = set([expand_state])
+            expanding_states = set([closure_state])
     
-            while round_states:
-                closure.update(round_states)
-                new_states = set()
-                for state in round_states:
-                    new_states.update(
+            while expanding_states:
+                closure.update(expanding_states)
+                visited_states = set()
+                for state in expanding_states:
+                    visited_states.update(
                         self._get_state(transition.state) 
                         for transition in state.transitions 
                         if not transition.symbol
                     )
-                round_states = new_states
+                expanding_states = visited_states
 
-            self.closures[expand_state] = closure
+            self.closures[closure_state] = closure
 
     def _get_state(self, name:str) -> State :
         return self._states_by_name[name] 
@@ -125,6 +127,8 @@ class FiniteAutomatonEvaluator():
         try:
             self.process_string(string)
             accepted = self.is_accepting()
+        except: 
+            accepted = False
         finally:
             self.current_states = old_states
 
