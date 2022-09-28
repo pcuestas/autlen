@@ -45,9 +45,11 @@ class FiniteAutomatonEvaluator():
         new_states = set()
 
         for state in self.current_states:
-            for transition in state.transitions:
-                if transition.symbol == symbol :
-                    new_states.add(self._get_state(transition.state))
+            new_states.update(
+                self._get_state(transition.state) 
+                for transition in state.transitions 
+                if transition.symbol==symbol
+            )
 
         self._complete_lambdas(new_states)
         self.current_states = new_states
