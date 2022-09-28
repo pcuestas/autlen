@@ -19,7 +19,7 @@ class FiniteAutomatonEvaluator():
     automaton: FiniteAutomaton
     current_states: Set[State]
 
-    closures: TypedDict[State, Set[str]]
+    #closures: TypedDict[State, Set[str]]
 
     def __init__(self, automaton: FiniteAutomaton) -> None:
         self.automaton = automaton
@@ -59,11 +59,11 @@ class FiniteAutomatonEvaluator():
         '''
 
         for state in self.automaton.states:
-            closure = set(state)
-            round_states = set(state)
+            closure = set([state])
+            round_states = set([state])
           
             while round_states:
-                closure.add(round_states)
+                closure.union(round_states)
                 new_states = set()
                 for state in round_states:
                     new_states.add(transition.state for transition in 
