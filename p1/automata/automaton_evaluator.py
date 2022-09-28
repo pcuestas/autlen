@@ -69,7 +69,11 @@ class FiniteAutomatonEvaluator():
                 closure.update(round_states)
                 new_states = set()
                 for state in round_states:
-                    new_states.update(self._get_state(transition.state) for transition in state.transitions if not transition.symbol)
+                    new_states.update(
+                        self._get_state(transition.state) 
+                        for transition in state.transitions 
+                        if not transition.symbol
+                    )
                 round_states = new_states
 
             self.closures[expand_state] = closure
