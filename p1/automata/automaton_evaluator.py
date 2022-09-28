@@ -54,7 +54,8 @@ class FiniteAutomatonEvaluator():
     
     def _compute_closures(self):
         '''
-        Completes the 
+        Completes the self.closures dictionary with the closure 
+        of each element.
         '''
 
         for state in self.automaton.states:
