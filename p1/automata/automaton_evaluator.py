@@ -74,7 +74,7 @@ class FiniteAutomatonEvaluator():
                     visited_states.update(
                         self._get_state(transition.state) 
                         for transition in state.transitions 
-                        if not transition.symbol
+                        if not transition.symbol and self._get_state(transition.state) not in closure
                     )
                 expanding_states = visited_states
 
