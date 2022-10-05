@@ -161,10 +161,13 @@ class FiniteAutomaton():
         closed_set: Set[FrozenSet[State]] = set()
 
         in_construction_automaton: Dict[FrozenSet[State], Dict[str, FrozenSet[State]]] = {}
+        emtpy_set_flag: bool = False
 
         while open_set:
             current_set = open_set.pop() 
-            if current_set not in closed_set:
+            if not current_set: 
+                emtpy_set_flag = True
+            elif current_set not in closed_set:
                 self._to_det_expand_set(
                     current_set=current_set, 
                     alphabet=alphabet, 
