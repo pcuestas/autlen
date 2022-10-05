@@ -1,8 +1,7 @@
 """Evaluation of automata."""
-from collections import defaultdict, deque
-from typing import Set, TypedDict
+from typing import Set, Dict
 
-from automata.automaton import FiniteAutomaton, State
+from automata.automaton import FiniteAutomaton, State, Transition
 
 class FiniteAutomatonEvaluator():
     """
@@ -19,18 +18,28 @@ class FiniteAutomatonEvaluator():
     automaton: FiniteAutomaton
     current_states: Set[State]
 
-    #closures: TypedDict[State, Set[str]]
+    closures: Dict[State, Set[State]]
+    _states_by_name: Dict[str, State]
+    _alphabet: set[str|None]
 
     def __init__(self, automaton: FiniteAutomaton) -> None:
         self.automaton = automaton
         current_states: Set[State] = {
             self.automaton.states[0],  
         }
+        # dictionary to relate state name to state esily
         self._states_by_name = {state.name:state for state in self.automaton.states}
-        transitions = sum([state.transitions for state in self.automaton.states], [])
+        # all transitions of every state
+        transitions: list[Transition] = sum(
+            [state.transitions for state in self.automaton.states], 
+            []
+        )
+        # the alphabet contains every symbol that appears in a transition 
         self._alphabet = set(transition.symbol for transition in transitions)
+        # self.closures is a dictionary that contains states as keys, and the set of states in its closure as values
         self.closures = {}
         self._compute_closures()
+
         self._complete_lambdas(current_states)
         self.current_states = current_states
 
@@ -46,7 +55,7 @@ class FiniteAutomatonEvaluator():
         if symbol not in self._alphabet:
             raise Exception #TODO CREAR EXCEPCION
 
-        new_states = set()
+        new_states: set[State] = set()
 
         for state in self.current_states:
             new_states.update(
@@ -58,18 +67,18 @@ class FiniteAutomatonEvaluator():
         self._complete_lambdas(new_states)
         self.current_states = new_states
     
-    def _compute_closures(self):
+    def _compute_closures(self) -> None:
         '''
-        Completes the self.closures dictionary with the closure 
-        of each element.
+        Completes the self.closures dictionary with 
+        the closure of each state of the automaton.
         '''
         for closure_state in self.automaton.states:
             closure = set()
-            expanding_states = set([closure_state])
+            expanding_states: set[State] = set([closure_state])
     
             while expanding_states:
                 closure.update(expanding_states)
-                visited_states = set()
+                visited_states: set[State] = set()
                 for state in expanding_states:
                     visited_states.update(
                         self._get_state(transition.state) 
@@ -112,8 +121,7 @@ class FiniteAutomatonEvaluator():
 
     def is_accepting(self) -> bool:
         """Check if the current state is an accepting one."""
-
-        return any([state.is_final for state in self.current_states])
+        return any(state.is_final for state in self.current_states)
         
 
     def accepts(self, string: str) -> bool:
@@ -127,7 +135,7 @@ class FiniteAutomatonEvaluator():
         try:
             self.process_string(string)
             accepted = self.is_accepting()
-        except: 
+        except:
             accepted = False
         finally:
             self.current_states = old_states

@@ -2,6 +2,7 @@
 from typing import List
 
 from automata.automaton import FiniteAutomaton, State, Transition
+from automata.utils import AutomataFormat
 
 def _re_to_rpn(re_string: str) -> str:
     """
@@ -61,11 +62,12 @@ class REParser():
             Automaton that accepts the empty language.
 
         """
-        #---------------------------------------------------------------------
-        # TO DO: Implement this method...
-        
-        raise NotImplementedError("This method must be implemented.")        
-        #---------------------------------------------------------------------
+        return  AutomataFormat.read(
+            """
+                Automaton:
+                    0 
+            """
+        )
         
 
     def _create_automaton_lambda(
@@ -78,11 +80,12 @@ class REParser():
             Automaton that accepts the empty string.
 
         """
-        #---------------------------------------------------------------------
-        # TO DO: Implement this method...
-        
-        raise NotImplementedError("This method must be implemented.")        
-        #---------------------------------------------------------------------
+        return  AutomataFormat.read(
+            """
+                Automaton:
+                    0 final
+            """
+        )
 
 
     def _create_automaton_symbol(
@@ -99,11 +102,14 @@ class REParser():
             Automaton that accepts a symbol.
 
         """
-        #---------------------------------------------------------------------
-        # TO DO: Implement this method...
-        
-        raise NotImplementedError("This method must be implemented.")        
-        #---------------------------------------------------------------------
+        return  AutomataFormat.read(
+            f"""
+                Automaton:
+                    0 
+                    1 final
+                    0-{symbol}->1
+            """
+        )
 
 
     def _create_automaton_star(

@@ -81,4 +81,8 @@ class TestREParser(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    #unittest.main()
+    auto = REParser()._create_automaton_symbol("m")
+    print(auto)
+    eva = FiniteAutomatonEvaluator(auto)
+    print(eva.accepts("ma"))
