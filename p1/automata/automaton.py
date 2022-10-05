@@ -147,6 +147,10 @@ class FiniteAutomaton():
 
         """
         #---------------------------------------------------------------------
+
+        '''
+        dict[set, dict[symbol, set]] // después traducimos set==> state
+        '''
         # TO DO: Implement this method...
         
         raise NotImplementedError("This method must be implemented.")        
@@ -168,5 +172,44 @@ class FiniteAutomaton():
         #---------------------------------------------------------------------
 
 
+
+class utils():
+    def alphabet(states: List[State]) -> Set[str]:
+        '''returns the alphabet of the transitions of all the states'''
+        # all transitions of every state
+        transitions: list[Transition] = sum(
+            [state.transitions for state in states], 
+            []
+        )
+        # the alphabet contains every symbol that appears in a transition 
+        return set(transition.symbol for transition in transitions)
+
+    def compute_closures(automaton: FiniteAutomaton) -> Set[State]:
+        '''
+        Completes a closures dictionary with 
+        the closure of each state of the automaton.
+        The return dict is:
+            - Key: state
+            - Value: set of states in the key's closure
+        '''
+        closures: Dict[State, Set[State]] = {} 
+        for closure_state in automaton.states:
+            closure = set()
+            expanding_states: set[State] = set([closure_state])
+    
+            while expanding_states:
+                closure.update(expanding_states)
+                visited_states: set[State] = set()
+                for state in expanding_states:
+                    visited_states.update(
+                        automaton.name2state[transition.state]
+                        for transition in state.transitions 
+                        if not transition.symbol and automaton.name2state[transition.state] not in closure
+                    )
+                expanding_states = visited_states
+
+            closures[closure_state] = closure
+
+        return closures
 
 

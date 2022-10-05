@@ -1,8 +1,10 @@
 """Conversion from regex to automata."""
-from typing import List
+from typing import List, Dict, Set
 
 from automata.automaton import FiniteAutomaton, State, Transition
 from automata.utils import AutomataFormat
+
+import copy 
 
 def _re_to_rpn(re_string: str) -> str:
     """
@@ -68,6 +70,37 @@ class REParser():
                     0 
             """
         )
+    
+
+
+    def _rename_states(
+        self, 
+        states: List[State], 
+        index: int = 0
+    )-> int:
+    
+        state_dict: Dict[str, str] = {} #nombre antiguo:nombre nuevo
+        
+        for state in states:
+            state_dict[state.name] = str(index)
+            index += 1
+
+        for state in states:
+            state.name = state_dict[state.name]
+            for transition in state.transitions:
+                transition.state = state_dict[transition.state]
+                
+        return index
+
+    def _get_final_states(
+        self, 
+        states: List[State]
+    ) -> Set[State]:
+        return set(
+            state 
+            for state in states 
+            if state.is_final
+        )
         
 
     def _create_automaton_lambda(
@@ -126,12 +159,21 @@ class REParser():
             Automaton that accepts the Kleene star.
 
         """
-        #---------------------------------------------------------------------
-        # TO DO: Implement this method...
         
-        raise NotImplementedError("This method must be implemented.")        
-        #---------------------------------------------------------------------
+        new_states = copy.deepcopy(automaton.states)
+        final_states_index = self._rename_states(new_states)
+        final_states = self._get_final_states(new_states)
+        
+        #Estado final sumidero.
+        final_state = State(name=str(final_states_index), is_final=True)
+        
+        for state in final_states:
+            state.add_transitions([Transition(symbol=None,state=final_state.name)])
 
+        new_states[0].add_transitions([Transition(symbol=None,state=final_state.name)])
+        final_state.add_transitions([Transition(symbol=None,state=new_states[0].name)])
+
+        return FiniteAutomaton(new_states + [final_state])
 
     def _create_automaton_union(
         self,
@@ -149,12 +191,22 @@ class REParser():
             Automaton that accepts the union.
 
         """
-        #---------------------------------------------------------------------
-        # TO DO: Implement this method...
         
-        raise NotImplementedError("This method must be implemented.")        
-        #---------------------------------------------------------------------
+        initial_state = State('0', is_final=False)
+        
+        states1 = copy.deepcopy(automaton1.states)
+        index = self._rename_states(states1, index=1)
+        index_inital_automaton2 = index
 
+        states2 = copy.deepcopy(automaton2.states)
+        index = self._rename_states(states2, index=index)
+
+        initial_state.add_transitions([
+            Transition(symbol=None, state='1'),
+            Transition(symbol=None, state=str(index_inital_automaton2))
+        ])
+
+        return FiniteAutomaton([initial_state] + states1 + states2) 
 
     def _create_automaton_concat(
         self,
@@ -172,12 +224,22 @@ class REParser():
             Automaton that accepts the concatenation.
 
         """
-        #---------------------------------------------------------------------
-        # TO DO: Implement this method...
-        
-        raise NotImplementedError("This method must be implemented.")        
-        #---------------------------------------------------------------------
+       
+        states1 = copy.deepcopy(automaton1.states)
+        index = self._rename_states(states1)
 
+        final_states1 = self._get_final_states(states1)
+
+        states2 = copy.deepcopy(automaton2.states)
+        index = self._rename_states(states2, index=index)
+
+        for state in final_states1:
+            state.add_transitions([
+                Transition(symbol=None,state=states2[0].name)
+            ])
+            state.is_final=False
+
+        return FiniteAutomaton(states1 + states2)
 
     def create_automaton(
         self,

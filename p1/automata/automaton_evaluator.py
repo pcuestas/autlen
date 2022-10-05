@@ -1,7 +1,7 @@
 """Evaluation of automata."""
 from typing import Set, Dict
 
-from automata.automaton import FiniteAutomaton, State, Transition
+from automata.automaton import FiniteAutomaton, State, utils
 
 class FiniteAutomatonEvaluator():
     """
@@ -19,7 +19,6 @@ class FiniteAutomatonEvaluator():
     current_states: Set[State]
 
     closures: Dict[State, Set[State]]
-    _states_by_name: Dict[str, State]
     _alphabet: set[str|None]
 
     def __init__(self, automaton: FiniteAutomaton) -> None:
@@ -27,18 +26,9 @@ class FiniteAutomatonEvaluator():
         current_states: Set[State] = {
             self.automaton.states[0],  
         }
-        # dictionary to relate state name to state esily
-        self._states_by_name = {state.name:state for state in self.automaton.states}
-        # all transitions of every state
-        transitions: list[Transition] = sum(
-            [state.transitions for state in self.automaton.states], 
-            []
-        )
-        # the alphabet contains every symbol that appears in a transition 
-        self._alphabet = set(transition.symbol for transition in transitions)
+        self._alphabet = utils.alphabet(automaton.states)
         # self.closures is a dictionary that contains states as keys, and the set of states in its closure as values
-        self.closures = {}
-        self._compute_closures()
+        self.closures = utils.compute_closures(automaton)
 
         self._complete_lambdas(current_states)
         self.current_states = current_states
@@ -66,31 +56,9 @@ class FiniteAutomatonEvaluator():
 
         self._complete_lambdas(new_states)
         self.current_states = new_states
-    
-    def _compute_closures(self) -> None:
-        '''
-        Completes the self.closures dictionary with 
-        the closure of each state of the automaton.
-        '''
-        for closure_state in self.automaton.states:
-            closure = set()
-            expanding_states: set[State] = set([closure_state])
-    
-            while expanding_states:
-                closure.update(expanding_states)
-                visited_states: set[State] = set()
-                for state in expanding_states:
-                    visited_states.update(
-                        self._get_state(transition.state) 
-                        for transition in state.transitions 
-                        if not transition.symbol and self._get_state(transition.state) not in closure
-                    )
-                expanding_states = visited_states
-
-            self.closures[closure_state] = closure
 
     def _get_state(self, name:str) -> State :
-        return self._states_by_name[name] 
+        return self.automaton.name2state[name] 
 
     def _complete_lambdas(self, set_to_complete: Set[State]) -> None:
         """

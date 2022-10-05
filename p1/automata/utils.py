@@ -2,6 +2,7 @@
 import re
 from collections import defaultdict, deque
 from typing_extensions import Final
+from automata.automaton import FiniteAutomaton, Transition, State
 
 import automata.automaton as aut
 
@@ -123,3 +124,4 @@ def write_dot(automaton: aut.FiniteAutomaton) -> str:
         )
         + "}\n"
     )
+
