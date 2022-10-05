@@ -1,5 +1,5 @@
 """Evaluation of automata."""
-from typing import Set, Dict
+from typing import Set, Dict, FrozenSet
 
 from automata.automaton import FiniteAutomaton, State, utils
 
@@ -18,8 +18,8 @@ class FiniteAutomatonEvaluator():
     automaton: FiniteAutomaton
     current_states: Set[State]
 
-    closures: Dict[State, Set[State]]
-    _alphabet: set[str|None]
+    closures: Dict[State, FrozenSet[State]]
+    _alphabet: Set[str]
 
     def __init__(self, automaton: FiniteAutomaton) -> None:
         self.automaton = automaton
@@ -67,7 +67,7 @@ class FiniteAutomatonEvaluator():
         Args:
             set_to_complete: Current set of states to be completed.
         """
-        completed = set()
+        completed: Set[State] = set()
 
         for state in set_to_complete:
             completed.update(self.closures[state])

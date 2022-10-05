@@ -4,6 +4,7 @@ from typing import (
     Set,
     List,
     Dict,
+    FrozenSet,
 )
 
 class State():
@@ -146,15 +147,73 @@ class FiniteAutomaton():
             Equivalent deterministic automaton.
 
         """
-        #---------------------------------------------------------------------
-
+        
         '''
         dict[set, dict[symbol, set]] // después traducimos set==> state
         '''
-        # TO DO: Implement this method...
-        
-        raise NotImplementedError("This method must be implemented.")        
-        #---------------------------------------------------------------------
+        alphabet: Set[str] = utils.alphabet(self.states)
+        closures: Dict[State, FrozenSet[State]] = utils.compute_closures(self)
+        # open_set: contains the visited (new)states, which are frozensets
+        open_set: Set[FrozenSet[State]] = set([
+            closures[self.states[0]]
+        ]) 
+        # closed_set contains the expanded (new)states, which are frozensets
+        closed_set: Set[FrozenSet[State]] = set()
+
+        in_construction_automaton: Dict[FrozenSet[State], Dict[str, FrozenSet[State]]] = {}
+
+        while open_set:
+            current_set = open_set.pop() 
+            if current_set not in closed_set:
+                self._to_det_expand_set(
+                    current_set=current_set, 
+                    alphabet=alphabet, 
+                    closures=closures, 
+                    open_set=open_set, 
+                    closed_set=closed_set, 
+                    in_construction_automaton=in_construction_automaton
+                )
+
+
+        pass # return FiniteAutomaton(states)
+
+    def _to_det_expand_set(
+        self, 
+        current_set: FrozenSet[State], 
+        alphabet: Set[str], 
+        closures: Dict[State, FrozenSet[State]],
+        open_set: Set[FrozenSet[State]] ,
+        closed_set: Set[FrozenSet[State]],
+        in_construction_automaton: Dict[FrozenSet[State], Dict[str, FrozenSet[State]]] 
+    )-> None:
+        closed_set.add(current_set)
+        in_construction_automaton[current_set] = {}
+        for symbol in alphabet:
+            next_set: FrozenSet[State] = self._to_det_get_next_set(
+                current_set=current_set, 
+                symbol=symbol, 
+                closures=closures
+            )
+            in_construction_automaton[current_set][symbol] = next_set
+            open_set.add(next_set)
+
+    def _to_det_get_next_set(
+        self,
+        current_set: FrozenSet[State], 
+        symbol: str,
+        closures: Dict[State, FrozenSet[State]],
+    )-> FrozenSet[State]:
+        # all possible transitions from current set of states:
+        transitions: List[Transition] = sum([state.transitions for state in current_set], [])
+        # set of states that we can go to using the symbol
+        next_set: Set[State] = set(
+            self.name2state[transition.state] 
+            for transition in transitions 
+            if transition.symbol==symbol
+        )
+        # return the closure of the set of states that 
+        # we can go to with the symbol
+        return utils.closure_of_set(states_set=next_set, closures=closures)
 
 
     def to_minimized(self) -> 'FiniteAutomaton':
@@ -173,8 +232,11 @@ class FiniteAutomaton():
 
 
 
-class utils():
-    def alphabet(states: List[State]) -> Set[str]:
+class utils:
+    @staticmethod
+    def alphabet(
+        states: List[State]
+    ) -> Set[str]:
         '''returns the alphabet of the transitions of all the states'''
         # all transitions of every state
         transitions: list[Transition] = sum(
@@ -182,9 +244,12 @@ class utils():
             []
         )
         # the alphabet contains every symbol that appears in a transition 
-        return set(transition.symbol for transition in transitions)
+        return set(transition.symbol for transition in transitions if transition.symbol)
 
-    def compute_closures(automaton: FiniteAutomaton) -> Set[State]:
+    @staticmethod
+    def compute_closures(
+        automaton: FiniteAutomaton
+    ) -> Dict[State, FrozenSet[State]] :
         '''
         Completes a closures dictionary with 
         the closure of each state of the automaton.
@@ -192,7 +257,7 @@ class utils():
             - Key: state
             - Value: set of states in the key's closure
         '''
-        closures: Dict[State, Set[State]] = {} 
+        closures: Dict[State, FrozenSet[State]] = {} 
         for closure_state in automaton.states:
             closure = set()
             expanding_states: set[State] = set([closure_state])
@@ -208,8 +273,23 @@ class utils():
                     )
                 expanding_states = visited_states
 
-            closures[closure_state] = closure
+            closures[closure_state] = frozenset(closure)
 
         return closures
+    
+    @staticmethod
+    def closure_of_set(
+        states_set: Set[State],
+        closures: Dict[State, FrozenSet[State]]
+    ) -> FrozenSet[State] :
+        '''
+        Recibe un conjunto (states_set) y un diccionario con 
+        las clausuras de cada estado. 
+        Devuelve la clausura de el conjunto.
+        '''
+        completed: Set[State] = set()
+        for state in states_set:
+            completed.update(closures[state])
+        return frozenset(completed)
 
 

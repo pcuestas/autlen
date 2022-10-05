@@ -3,6 +3,8 @@ import unittest
 
 from automata.automaton_evaluator import FiniteAutomatonEvaluator
 from automata.re_parser import REParser
+from automata.automaton import FiniteAutomaton
+from automata.utils import AutomataFormat
 
 
 class TestREParser(unittest.TestCase):
@@ -81,4 +83,14 @@ class TestREParser(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    #unittest.main()
+    aut = AutomataFormat().read(
+        '''
+        Automaton:
+        0 final
+        1
+        0-->1
+        1-0->0
+        '''
+    )
+    aut.to_deterministic()
