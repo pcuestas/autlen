@@ -43,7 +43,7 @@ class FiniteAutomatonEvaluator():
 
         """
         if symbol not in self._alphabet:
-            raise Exception #TODO CREAR EXCEPCION
+            raise InvalidSymbol(f"'{symbol}' is not in the alphabet.")
 
         new_states: set[State] = set()
 
@@ -103,10 +103,16 @@ class FiniteAutomatonEvaluator():
         try:
             self.process_string(string)
             accepted = self.is_accepting()
-        except:
-            accepted = False
+        except InvalidSymbol:
+            accepted = False # if there is an error while processing
         finally:
             self.current_states = old_states
 
         return accepted
 
+
+class InvalidSymbol(Exception):
+    """
+    Exception used when the processed symbol 
+    is not in the alphabet.
+    """

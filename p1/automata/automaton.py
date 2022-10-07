@@ -37,6 +37,9 @@ class State():
 
     def __repr__(self) -> str:
         return (
+            f"\n{type(self).__name__}({self.name!r}, is_final={self.is_final!r}, transitions={self.transitions!r})"
+        ) #TODO remove
+        return (
             f"{type(self).__name__}({self.name!r}, is_final={self.is_final!r}, transitions={self.transitions!r})"
         )
 
@@ -311,24 +314,26 @@ class utils:
 
     @staticmethod
     def name_of_states_set(
-        states_set: FrozenSet[State]
+        states_set: FrozenSet[State],
+        empty_state_name: str = 'empty'
     )-> str:
         if not states_set:
-            return 'empty'
+            return empty_state_name
         names = [state.name for state in states_set]
         names.sort()
         return "|".join(names)
 
     @staticmethod
     def dict_to_transitions(
-        transitions_dict: Dict[str, FrozenSet[State]]
+        transitions_dict: Dict[str, FrozenSet[State]],
+        set_names: Dict[FrozenSet[State], str]
     )-> List[Transition]:
         transitions: List[Transition] = []
         for symbol, states_set in transitions_dict.items():
             transitions.append(
                 Transition(
                     symbol=symbol,
-                    state=utils.name_of_states_set(states_set)
+                    state=set_names[states_set]
                 )
             )
         return transitions
@@ -349,21 +354,31 @@ class utils:
         '''
         new_automaton_states: List[State] = []
 
-        for states_set, transitions_dict in in_construction_automaton.items():
-            new_state: State = State(
-                name=utils.name_of_states_set(states_set), 
-                is_final=any(state.is_final for state in states_set)
-            )
-            # transitions:
-            new_state.add_transitions(utils.dict_to_transitions(transitions_dict))
-            new_automaton_states.append(new_state)
+        new_states_names: Dict[FrozenSet[State], str] = {
+            states_set:utils.name_of_states_set(states_set) 
+            for states_set in in_construction_automaton
+        }
 
         if empty_set_flag:
-            empty_state = State(name='empty', is_final=False)
+            empty_state_name = 'empty'
+            while empty_state_name in new_states_names.values():
+                empty_state_name = '_'+empty_state_name
+            empty_state = State(name=empty_state_name, is_final=False)
             empty_state.add_transitions([
-                Transition(symbol=symbol, state='empty') 
+                Transition(symbol=symbol, state=empty_state_name) 
                 for symbol in alphabet
             ])
+            new_states_names[frozenset()] = empty_state_name
+
+        for states_set, transitions_dict in in_construction_automaton.items():
+            new_state: State = State(
+                name=new_states_names[states_set], 
+                is_final=any(state.is_final for state in states_set)
+            )
+            new_automaton_states.append(new_state)
+            new_state.add_transitions(utils.dict_to_transitions(transitions_dict, new_states_names))
+
+        if empty_set_flag:
             new_automaton_states.append(empty_state)
 
         return new_automaton_states

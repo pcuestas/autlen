@@ -83,14 +83,4 @@ class TestREParser(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #unittest.main()
-    aut = AutomataFormat().read(
-        '''
-        Automaton:
-        0 final
-        1
-        0-->1
-        1-0->0
-        '''
-    )
-    aut.to_deterministic()
+    unittest.main()
