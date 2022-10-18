@@ -2,7 +2,6 @@
 import re
 from collections import defaultdict, deque
 from typing_extensions import Final
-from automata.automaton import FiniteAutomaton, Transition, State
 
 import automata.automaton as aut
 
@@ -125,3 +124,89 @@ def write_dot(automaton: aut.FiniteAutomaton) -> str:
         + "}\n"
     )
 
+def is_deterministic(automaton: aut.FiniteAutomaton) -> bool:
+    """
+    Check if an automaton is deterministic.
+
+    Args:
+        automaton: Automaton to check.
+
+    Returns:
+        ``True`` if the automaton is deterministic.
+        ``False`` otherwise.
+
+    """
+    checked_origins = set()
+
+    for s in automaton.states:
+        for t in s.transitions:
+            if t.symbol is None:
+                return False
+
+            origin = (s, t.symbol)
+            if origin in checked_origins:
+                return False
+
+            checked_origins.add(origin)
+
+    return True
+
+def deterministic_automata_isomorphism(
+    automaton1: aut.FiniteAutomaton,
+    automaton2: aut.FiniteAutomaton,
+) -> Optional[Mapping[aut.State, aut.State]]:
+    """Check if two deterministic automata are the same but renamed."""
+    if not is_deterministic(automaton1) or not is_deterministic(automaton2):
+        raise ValueError("Automata are not deterministic")
+
+    if len(automaton1.states) != len(automaton2.states):
+        return None
+
+    for s1, s2 in zip(automaton1.states, automaton2.states):
+        if len(s1.transitions) != len(s2.transitions):
+            return None
+
+    equiv_map: Dict[aut.State, aut.State] = {}
+    pending = deque({(automaton1.states[0], automaton2.states[0])})
+
+    transition_map1: DefaultDict[
+        aut.State,
+        Dict[Optional[str], aut.State],
+    ] = defaultdict(dict)
+    for s in automaton1.states:
+        for t in s.transitions:
+            transition_map1[s][t.symbol] = automaton1.name2state[t.state]
+
+    transition_map2: DefaultDict[
+        aut.State,
+        Dict[Optional[str], aut.State],
+    ] = defaultdict(dict)
+    for s in automaton2.states:
+        for t in s.transitions:
+            transition_map2[s][t.symbol] = automaton2.name2state[t.state]
+
+    while pending:
+        state1, state2 = pending.pop()
+        if state1.is_final is not state2.is_final:
+            return None
+
+        equiv_state = equiv_map.get(state1)
+        if equiv_state:
+            if equiv_state is not state2:
+                return None
+
+        else:
+            equiv_map[state1] = state2
+            transitions1 = transition_map1[state1]
+            transitions2 = transition_map2[state2]
+            if len(transitions1) != len(transitions2):
+                return None
+
+            for symbol, final1 in transitions1.items():
+                final2 = transitions2.get(symbol)
+                if final2 is None:
+                    return None
+
+                pending.appendleft((final1, final2))
+
+    return equiv_map
