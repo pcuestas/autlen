@@ -1,5 +1,5 @@
 """Test evaluation of automatas."""
-from typing import Tuple
+from typing import List, Tuple
 import unittest
 from abc import ABC
 
@@ -32,38 +32,22 @@ class TestREParser(unittest.TestCase):
                 eval2.accepts(string)
             )
 
-    def test_1(self) -> None:
+    def _test_string(self, string:str, min_states_number:int, test_strings:List[str]) -> None:
         """Test fixed regex."""
-        evaluator_original, evaluator_minimized, automaton_minimized = self._create_evals_minimized("H.e.l.l.o")
-        
-        self.assertEqual(len(automaton_minimized.states), 7)
+        evaluator_original, evaluator_minimized, automaton_minimized = self._create_evals_minimized(string)
 
-        self._check_same(evaluator_original, evaluator_minimized, "Hello")
-        self._check_same(evaluator_original, evaluator_minimized, "Hella")
-        self._check_same(evaluator_original, evaluator_minimized, "Helio")
-        self._check_same(evaluator_original, evaluator_minimized, "Hel-o")
-        self._check_same(evaluator_original, evaluator_minimized, "hello")
-        self._check_same(evaluator_original, evaluator_minimized, "ello")
-        self._check_same(evaluator_original, evaluator_minimized, "Helllo")
+        self.assertEqual(len(automaton_minimized.states), min_states_number)
 
-    def _check_deterministic(
-        self, 
-        original: FiniteAutomaton,
-        deterministic: FiniteAutomaton
-    ) -> None:
-        alphabet = utils.alphabet(original.states)
-        self.assertTrue(
-            all(
-                all(
-                    any(
-                        transition.symbol==symbol
-                        for transition in state.transitions 
-                    )
-                    for symbol in alphabet
-                )
-                for state in deterministic.states
-            )
-        )
+        for test_string in test_strings:
+            self._check_same(evaluator_original, evaluator_minimized, test_string)
+
+    def test_all(self):
+        tests: List[Tuple[str, int, List[str]]] = [
+            ("H.e.l.l.o", 7, ["Hello", "Hella", "hello", "", "Hiello"])
+        ]
+
+        for test in tests:
+            self._test_string(test[0], test[1], test[2])
 
 
 
