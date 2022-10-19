@@ -1,7 +1,7 @@
 """Conversion from regex to automata."""
 from typing import List, Dict, Set
 
-from automata.automaton import FiniteAutomaton, State, Transition
+from automata.automaton import FiniteAutomaton, State, Transition, utils
 from automata.utils import AutomataFormat
 
 import copy 
@@ -92,16 +92,6 @@ class REParser():
                 
         return index
 
-    def _get_final_states(
-        self, 
-        states: List[State]
-    ) -> Set[State]:
-        return set(
-            state 
-            for state in states 
-            if state.is_final
-        )
-        
 
     def _create_automaton_lambda(
         self,
@@ -162,7 +152,7 @@ class REParser():
         
         new_states = copy.deepcopy(automaton.states)
         final_states_index = self._rename_states(new_states)
-        final_states = self._get_final_states(new_states)
+        final_states = utils.get_final_states(new_states)
         
         #Estado final sumidero.
         final_state = State(name=str(final_states_index), is_final=True)
@@ -228,7 +218,7 @@ class REParser():
         states1 = copy.deepcopy(automaton1.states)
         index = self._rename_states(states1)
 
-        final_states1 = self._get_final_states(states1)
+        final_states1 = utils.get_final_states(states1)
 
         states2 = copy.deepcopy(automaton2.states)
         index = self._rename_states(states2, index=index)

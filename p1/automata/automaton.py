@@ -1,4 +1,8 @@
+
+
+
 """Automaton implementation."""
+from logging import raiseExceptions
 from typing import (
     Optional,
     Set,
@@ -37,7 +41,7 @@ class State():
 
     def __repr__(self) -> str:
         return (
-            f"\n{type(self).__name__}({self.name!r}, is_final={self.is_final!r}, transitions={self.transitions!r})"
+            f"\n\t{type(self).__name__}({self.name!r}, transitions={self.transitions!r})"
         ) #TODO remove
         return (
             f"{type(self).__name__}({self.name!r}, is_final={self.is_final!r}, transitions={self.transitions!r})"
@@ -241,16 +245,84 @@ class FiniteAutomaton():
             Equivalent minimal automaton.
 
         """
-        #---------------------------------------------------------------------
-        # TO DO: Implement this method...
+        alphabet: Set[str] = utils.alphabet(states=self.states)
+        final_states: Set[State] = utils.get_final_states(self.states)
+        old_partition: Set[FrozenSet[State]] = set([frozenset(final_states), frozenset(set(self.states).difference(final_states))])
+        new_partition: Set[FrozenSet[State]] = set()
         
-        raise NotImplementedError("This method must be implemented.")        
-        #---------------------------------------------------------------------
+        while old_partition != new_partition:
+            new_partition = set()
+            print("OLD PARTITION: " + str(old_partition) + '\n')
+            
+            for _old_eq_class in old_partition:
+                old_eq_class = set(_old_eq_class)
+
+                while old_eq_class:
+                    current_state, *_ = old_eq_class
+                    new_eq_class: Set[State] = set()
+                    new_eq_class.update(
+                        state for state in old_eq_class 
+                        if not self._distinguisable(
+                            state1=current_state, 
+                            state2=state, 
+                            partition=old_partition,
+                            alphabet=alphabet
+                        )
+                    )
+                    old_eq_class = old_eq_class.difference(new_eq_class)
+                    new_partition.add(frozenset(new_eq_class))
+
+            old_partition = new_partition
+        
+        print("OLD PARTITION: " + str(old_partition) + '\n')
+            
+        states: List[State] = utils.get_states_list_from_partition(self, old_partition)
+        
+        return FiniteAutomaton(states=states)
+
+    def _transition_function(
+        self,
+        state: State,
+        symbol: str
+    ) -> State:
+        for transition in state.transitions:
+            if transition.symbol == symbol:
+                return self.name2state[transition.state]
+        raise DFAError(f"State {state} does not contain a transition for symbol '{symbol}'.")
+
+    def _distinguisable(
+        self,
+        state1: State,
+        state2: State,
+        partition: Set[FrozenSet[State]],
+        alphabet: Set[str]
+    ) -> bool:
+        '''
+        Comprueba si dos estados son distinguibles en una partición k.
+        partition: partición k-1
+        '''
+        for symbol in alphabet:
+            next_state1 = self._transition_function(state1, symbol)
+            next_state2 = self._transition_function(state2, symbol)
+            if next_state2 not in utils.get_equivalence_class(next_state1, partition):
+                return True
+        print(f"INDISTINGUISABLE: {state1} and {state2}")
+        return False
 
 
 
 
 class utils:
+    @staticmethod
+    def get_final_states(
+        states: List[State]
+    ) -> Set[State]:
+        return set(
+            state 
+            for state in states 
+            if state.is_final
+        )
+    
     @staticmethod
     def alphabet(
         states: List[State]
@@ -260,7 +332,7 @@ class utils:
         That is, every symbol there is a transition for.
         '''
         # all transitions of every state
-        transitions: list[Transition] = sum(
+        transitions: List[Transition] = sum(
             [state.transitions for state in states], 
             []
         )
@@ -281,11 +353,11 @@ class utils:
         closures: Dict[State, FrozenSet[State]] = {} 
         for closure_state in automaton.states:
             closure = set()
-            expanding_states: set[State] = set([closure_state])
+            expanding_states: Set[State] = set([closure_state])
     
             while expanding_states:
                 closure.update(expanding_states)
-                visited_states: set[State] = set()
+                visited_states: Set[State] = set()
                 for state in expanding_states:
                     visited_states.update(
                         automaton.name2state[transition.state]
@@ -329,6 +401,9 @@ class utils:
         transitions_dict: Dict[str, FrozenSet[State]],
         set_names: Dict[FrozenSet[State], str]
     )-> List[Transition]:
+        '''
+        Transforms the transitions informally
+        '''
         transitions: List[Transition] = []
         for symbol, states_set in transitions_dict.items():
             transitions.append(
@@ -384,39 +459,63 @@ class utils:
 
         return new_automaton_states
 
-
-    def _transition_function(
-        state:State,
-        symbol: str
-    ) -> State:
-        for transition in state.transitions:
-            if transition.symbol == symbol:
-                return transition.state
-
-
-    def _containing_set(
-        state: State,
-        partition: Set[Set[State]]
-    ) -> Set[State]:
+    @staticmethod
+    def get_equivalence_class(
+        state: State,       
+        partition: Set[FrozenSet[State]]
+    ) -> FrozenSet[State]:
         for eq_class in partition:
             if state in eq_class:
                 return eq_class
+                
+        raise PartitionError
+        
+
 
     @staticmethod
-    def distinguisable(
-        state1: State,
-        state2: State,
-        partition: Set[Set[State]],
-        alphabet: Set[str]
-    ) -> bool:
-        '''
-        Comprueba si dos estados son distinguibles en una partición k.
-        partition: partición k-1
-        '''
-        for symbol in alphabet:
-            q1 = utils._transition_function(state1,symbol)
-            q2 = utils._transition_function(state2,symbol)
-            if utils._containing_set(q1,partition) != utils._containing_set(q2,partition):
-                return True
+    def get_state_name_from_equivalence_class(
+        equivalence_class: FrozenSet[State]
+    )-> str:
+        names = [state.name for state in equivalence_class]
+        names.sort()
+        return names[0]
         
-        return False
+    @staticmethod
+    def get_states_list_from_partition(
+        automaton: FiniteAutomaton,
+        partition: Set[FrozenSet[State]]
+    )-> List[State]:
+        states: List[State] = []
+        
+        for eq_class in partition:
+            state_representative, *_ = eq_class
+            state: State = State(   
+                name = utils.get_state_name_from_equivalence_class(eq_class),
+                is_final = state_representative.is_final,
+            )
+            state.add_transitions([
+                Transition(
+                    symbol = transition.symbol,
+                    state = utils.get_state_name_from_equivalence_class(
+                        utils.get_equivalence_class(
+                            state = automaton.name2state[transition.state],
+                            partition = partition
+                        )
+                    )
+                )
+                for transition in state_representative.transitions
+            ])
+            states.append(state)
+        
+        return states
+
+class PartitionError(Exception):
+    """
+    Exception used when a state does not have an equivalence class
+    """
+
+class DFAError(Exception):
+    """
+    Exception used when a suposedly deterministic automaton is not 
+    deterministic (there is no transition for a symbol)
+    """
