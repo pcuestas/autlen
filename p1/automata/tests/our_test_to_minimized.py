@@ -41,7 +41,7 @@ class TestREParser(unittest.TestCase):
         for test_string in test_strings:
             self._check_same(evaluator_original, evaluator_minimized, test_string)
 
-    def test_all(self):
+    def test_all(self)->None:
         tests: List[Tuple[str, int, List[str]]] = [
             ("H.e.l.l.o", 7, ["Hello", "Hella", "hello", "", "Hiello"])
         ]

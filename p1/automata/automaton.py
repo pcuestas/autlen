@@ -247,12 +247,12 @@ class FiniteAutomaton():
         """
         alphabet: Set[str] = utils.alphabet(states=self.states)
         final_states: Set[State] = utils.get_final_states(self.states)
-        old_partition: Set[FrozenSet[State]] = set([frozenset(final_states), frozenset(set(self.states).difference(final_states))])
-        new_partition: Set[FrozenSet[State]] = set()
+        new_partition: Set[FrozenSet[State]] = set([frozenset(set(self.states).difference(final_states)), frozenset(final_states)])
+        old_partition: Set[FrozenSet[State]] = set()
         
         while old_partition != new_partition:
+            old_partition = new_partition
             new_partition = set()
-            print("OLD PARTITION: " + str(old_partition) + '\n')
             
             for _old_eq_class in old_partition:
                 old_eq_class = set(_old_eq_class)
@@ -272,13 +272,10 @@ class FiniteAutomaton():
                     old_eq_class = old_eq_class.difference(new_eq_class)
                     new_partition.add(frozenset(new_eq_class))
 
-            old_partition = new_partition
-        
-        print("OLD PARTITION: " + str(old_partition) + '\n')
             
         states: List[State] = utils.get_states_list_from_partition(self, old_partition)
-        
-        return FiniteAutomaton(states=states)
+        min_automaton: FiniteAutomaton =  FiniteAutomaton(states=states)
+        return min_automaton
 
     def _transition_function(
         self,
@@ -306,7 +303,7 @@ class FiniteAutomaton():
             next_state2 = self._transition_function(state2, symbol)
             if next_state2 not in utils.get_equivalence_class(next_state1, partition):
                 return True
-        print(f"INDISTINGUISABLE: {state1} and {state2}")
+                
         return False
 
 
@@ -505,7 +502,12 @@ class utils:
                 )
                 for transition in state_representative.transitions
             ])
-            states.append(state)
+
+            # the first state has to remain the same
+            if automaton.states[0] in eq_class:
+                states.insert(0, state)
+            else:
+                states.append(state)
         
         return states
 
