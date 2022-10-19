@@ -249,6 +249,7 @@ class FiniteAutomaton():
 
 
 
+
 class utils:
     @staticmethod
     def alphabet(
@@ -382,3 +383,40 @@ class utils:
             new_automaton_states.append(empty_state)
 
         return new_automaton_states
+
+
+    def _transition_function(
+        state:State,
+        symbol: str
+    ) -> State:
+        for transition in state.transitions:
+            if transition.symbol == symbol:
+                return transition.state
+
+
+    def _containing_set(
+        state: State,
+        partition: Set[Set[State]]
+    ) -> Set[State]:
+        for eq_class in partition:
+            if state in eq_class:
+                return eq_class
+
+    @staticmethod
+    def distinguisable(
+        state1: State,
+        state2: State,
+        partition: Set[Set[State]],
+        alphabet: Set[str]
+    ) -> bool:
+        '''
+        Comprueba si dos estados son distinguibles en una partición k.
+        partition: partición k-1
+        '''
+        for symbol in alphabet:
+            q1 = utils._transition_function(state1,symbol)
+            q2 = utils._transition_function(state2,symbol)
+            if utils._containing_set(q1,partition) != utils._containing_set(q2,partition):
+                return True
+        
+        return False
