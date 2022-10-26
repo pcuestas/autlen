@@ -3,7 +3,7 @@ from typing import List, Tuple
 import unittest
 from abc import ABC
 
-from automata.automaton import FiniteAutomaton, utils
+from automata.automaton import FiniteAutomaton, State
 from automata.automaton_evaluator import FiniteAutomatonEvaluator
 from automata.re_parser import REParser
 
@@ -17,7 +17,9 @@ class TestREParser(unittest.TestCase):
         regex: str
     ) -> Tuple[FiniteAutomatonEvaluator, FiniteAutomatonEvaluator, FiniteAutomaton]:
         original = REParser().create_automaton(regex)
-        minimized = original.to_deterministic().to_minimized()
+        det = original.to_deterministic()
+        det.states.append(State("extra", True))
+        minimized = det.to_minimized()
         return FiniteAutomatonEvaluator(original), FiniteAutomatonEvaluator(minimized), minimized
 
     def _check_same(

@@ -236,7 +236,6 @@ class FiniteAutomaton():
         # we can transition to with the symbol
         return utils.closure_of_set(states_set=next_states_set, closures=closures)
 
-
     def to_minimized(self) -> 'FiniteAutomaton':
         """
         Return a equivalent minimal automaton.
@@ -245,9 +244,10 @@ class FiniteAutomaton():
             Equivalent minimal automaton.
 
         """
-        alphabet: Set[str] = utils.alphabet(states=self.states)
-        final_states: Set[State] = utils.get_final_states(self.states)
-        new_partition: Set[FrozenSet[State]] = set([frozenset(set(self.states).difference(final_states)), frozenset(final_states)])
+        previous_states: List[State] = self._get_accessible_states()
+        alphabet: Set[str] = utils.alphabet(states=previous_states)
+        final_states: Set[State] = utils.get_final_states(previous_states)
+        new_partition: Set[FrozenSet[State]] = set([frozenset(set(previous_states).difference(final_states)), frozenset(final_states)])
         old_partition: Set[FrozenSet[State]] = set()
         
         while old_partition != new_partition:
@@ -306,6 +306,20 @@ class FiniteAutomaton():
                 
         return False
 
+    def _get_accessible_states(self) -> List[State]:
+        '''returns the list of accessible states 
+        from the initial state'''
+        open_list: List[State] = [self.states[0]]
+        closed_list: List[State] = []
+        while open_list:
+            current_state: State = open_list.pop()
+            if current_state not in closed_list:
+                closed_list.append(current_state)
+                open_list.extend([
+                    self.name2state[transition.state] 
+                    for transition in current_state.transitions
+                ])
+        return closed_list
 
 
 
@@ -314,6 +328,7 @@ class utils:
     def get_final_states(
         states: List[State]
     ) -> Set[State]:
+        '''devuelve un conjunto con los estados finales'''
         return set(
             state 
             for state in states 
@@ -461,6 +476,7 @@ class utils:
         state: State,       
         partition: Set[FrozenSet[State]]
     ) -> FrozenSet[State]:
+        '''returns the eq. class of state in the partition'''
         for eq_class in partition:
             if state in eq_class:
                 return eq_class
@@ -468,11 +484,11 @@ class utils:
         raise PartitionError
         
 
-
     @staticmethod
     def get_state_name_from_equivalence_class(
         equivalence_class: FrozenSet[State]
     )-> str:
+        '''returns the name of an equivalence class as a state'''
         names = [state.name for state in equivalence_class]
         names.sort()
         return names[0]
@@ -482,6 +498,9 @@ class utils:
         automaton: FiniteAutomaton,
         partition: Set[FrozenSet[State]]
     )-> List[State]:
+        '''receives the partition and returns the 
+        corresponding transformation to list of states
+        with its transitions'''
         states: List[State] = []
         
         for eq_class in partition:
