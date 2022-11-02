@@ -1,4 +1,5 @@
 """Test evaluation of automatas."""
+from random import random
 from typing import List, Tuple
 import unittest
 from abc import ABC, abstractmethod
@@ -41,8 +42,8 @@ class TestMinimizedBase(ABC, unittest.TestCase):
     ) -> Tuple[FiniteAutomatonEvaluator, FiniteAutomatonEvaluator, FiniteAutomaton]:
         self.original = REParser().create_automaton(self.regex)
         det = self.original.to_deterministic()
-        det.states.append(State("extra", True))
-        det.states.append(State("extra2", True))
+        if random()<.3: det.states.append(State("extra", True))
+        if random()<.3: det.states.append(State("extra2", True))
         self.minimized = det.to_minimized()
         self.original_evaluator = FiniteAutomatonEvaluator(self.original)
         self.minimized_evaluator = FiniteAutomatonEvaluator(self.minimized)
