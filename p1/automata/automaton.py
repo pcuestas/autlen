@@ -395,10 +395,10 @@ class utils:
         the closures of each state.
         Returns the closure of states_set.
         '''
-        completed: Set[State] = set()
-        for state in states_set:
-            completed.update(closures[state])
-        return frozenset(completed)
+        return frozenset(set().union(*[
+            closures[state]
+            for state in states_set
+        ]))
 
     @staticmethod
     def name_of_states_set(
