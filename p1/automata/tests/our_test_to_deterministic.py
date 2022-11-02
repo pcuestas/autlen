@@ -1,13 +1,22 @@
 """Test evaluation of automatas."""
+import os
 import unittest
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple, Type
 
+from automata.utils import write_dot
 from automata.automaton import FiniteAutomaton, utils
 from automata.automaton_evaluator import FiniteAutomatonEvaluator
 from automata.utils import AutomataFormat
 from automata.re_parser import REParser
 
+
+def represent_dot(filename:str,automaton:FiniteAutomaton)->None:
+    dir_path = os.path.dirname(os.path.realpath(__file__))+'/dot/'
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    with open(dir_path+filename, "w") as f:
+        f.write(write_dot(automaton))
 
 class TestEvaluatorBase(ABC, unittest.TestCase):
     """Base class for string acceptance tests."""
@@ -26,6 +35,9 @@ class TestEvaluatorBase(ABC, unittest.TestCase):
         self.automaton = self.original.to_deterministic()
         self.original_evaluator = FiniteAutomatonEvaluator(self.original)
         self.evaluator = FiniteAutomatonEvaluator(self.automaton)
+        represent_dot(type(self).__name__ + 'Original.dot', self.original)
+        represent_dot(type(self).__name__ + 'Deterministic.dot',self.automaton)
+
 
     def _check_accept_body(
         self,
@@ -52,11 +64,12 @@ class TestEvaluatorBase(ABC, unittest.TestCase):
                     self._check_accept_body(string, should_accept)
     
     def _check_deterministic(self) -> None:
+        '''comprueba que el self.automaton es determinista'''
         alphabet = utils.alphabet(self.original.states)
         self.assertTrue(
-            all(
-                all(
-                    any(
+            all(# para cada estado
+                all(# para cada símbolo
+                    any(# existe alguna transición 
                         transition.symbol==symbol
                         for transition in state.transitions 
                     )
@@ -65,9 +78,15 @@ class TestEvaluatorBase(ABC, unittest.TestCase):
                 for state in self.automaton.states
             )
         )
+        self.assertTrue(
+            all(# para cada estado, hay tantas transiciones como símbolos
+                len(alphabet)==len(state.transitions)
+                for state in self.automaton.states
+            )
+        )
 
     
-class TestEvaluatorFixed(TestEvaluatorBase):
+class TestHello(TestEvaluatorBase):
     """Test for a fixed string."""
 
     def _create_automata(self) -> FiniteAutomaton:
@@ -287,4 +306,5 @@ class TestREParser(unittest.TestCase):
         )
 
 if __name__ == '__main__':
+    print(f"### Beginning {os.path.basename(__file__)}")
     unittest.main()

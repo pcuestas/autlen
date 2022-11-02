@@ -1,0 +1,18 @@
+digraph {
+  rankdir=LR;
+
+  node [shape = point]; __start_point__
+  Empty[shape=circle]
+  H[shape=circle]
+  He[shape=circle]
+  Hel[shape=circle]
+  Hell[shape=circle]
+  Hello[shape=doublecircle]
+
+  __start_point__ -> Empty
+  Empty -> H[label="H"]
+  H -> He[label="e"]
+  He -> Hel[label="l"]
+  Hel -> Hell[label="l"]
+  Hell -> Hello[label="o"]
+}

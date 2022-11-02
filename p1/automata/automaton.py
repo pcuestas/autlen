@@ -407,7 +407,7 @@ class utils:
             return empty_state_name
         names = [state.name for state in states_set]
         names.sort()
-        return "|".join(names)
+        return "s"+"_".join(names)
 
     @staticmethod
     def dict_to_transitions(

@@ -1,0 +1,23 @@
+digraph {
+  rankdir=LR;
+
+  node [shape = point]; __start_point__
+  initial[shape=circle]
+  sign[shape=circle]
+  int[shape=doublecircle]
+  dot[shape=circle]
+  decimal[shape=doublecircle]
+
+  __start_point__ -> initial
+  initial -> sign[label="λ"]
+  initial -> sign[label="-"]
+  sign -> int[label="0"]
+  sign -> int[label="1"]
+  int -> int[label="0"]
+  int -> dot[label="."]
+  int -> int[label="1"]
+  dot -> decimal[label="0"]
+  dot -> decimal[label="1"]
+  decimal -> decimal[label="0"]
+  decimal -> decimal[label="1"]
+}
