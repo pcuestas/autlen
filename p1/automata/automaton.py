@@ -2,7 +2,6 @@
 
 
 """Automaton implementation."""
-from logging import raiseExceptions
 from typing import (
     Optional,
     Set,
@@ -244,10 +243,13 @@ class FiniteAutomaton():
             Equivalent minimal automaton.
 
         """
-        previous_states: List[State] = self._get_accessible_states()
-        alphabet: Set[str] = utils.alphabet(states=previous_states)
-        final_states: Set[State] = utils.get_final_states(previous_states)
-        new_partition: Set[FrozenSet[State]] = set([frozenset(set(previous_states).difference(final_states)), frozenset(final_states)])
+        accessible_states: List[State] = self._get_accessible_states()
+        alphabet: Set[str] = utils.alphabet(states=accessible_states)
+        final_states: Set[State] = utils.get_final_states(accessible_states)
+        new_partition: Set[FrozenSet[State]] = set([
+            frozenset(set(accessible_states).difference(final_states)), 
+            frozenset(final_states)
+        ])
         old_partition: Set[FrozenSet[State]] = set()
         
         while old_partition != new_partition:
@@ -258,9 +260,10 @@ class FiniteAutomaton():
                 old_eq_class = set(_old_eq_class)
 
                 while old_eq_class:
+                    # take a state from the old_eq_class
                     current_state, *_ = old_eq_class
-                    new_eq_class: Set[State] = set()
-                    new_eq_class.update(
+                    # the new equivalence class of current_state
+                    new_eq_class: Set[State] = set(
                         state for state in old_eq_class 
                         if not self._distinguisable(
                             state1=current_state, 
@@ -269,7 +272,10 @@ class FiniteAutomaton():
                             alphabet=alphabet
                         )
                     )
+                    # remove from old eq. class the states already
+                    # assigned to the new eq. class:
                     old_eq_class = old_eq_class.difference(new_eq_class)
+                    # add the new eq. class to the new partition
                     new_partition.add(frozenset(new_eq_class))
 
             
