@@ -166,7 +166,7 @@ class TestDeterministic_Lambdas(TestDeterministicBase):
     
 
 class TestDeterministic_Number(TestDeterministicBase):
-    """Acepta números decimales, con el formato de la práctica anterior."""
+    """Acepta números decimales: mismo autómata que en test_evaluator."""
 
     def _create_automata(self) -> FiniteAutomaton:
 

@@ -64,7 +64,7 @@ class TestMinimizedBase(ABC, unittest.TestCase):
         self.minimized_evaluator2 = FiniteAutomatonEvaluator(self.minimized2)
 
         represent_dot(type(self).__name__ + 'OriginalDet.dot', det)
-        represent_dot(type(self).__name__ + 'Minimized.dot',self.minimized)
+        represent_dot(type(self).__name__ + 'Minimized.dot',self.minimized2)
 
     def _check_same(
         self,
