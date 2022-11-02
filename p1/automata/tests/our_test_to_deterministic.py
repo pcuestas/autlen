@@ -335,5 +335,4 @@ class TestDeterministic_WithParser(unittest.TestCase):
         )
 
 if __name__ == '__main__':
-    print(f"### Beginning {os.path.basename(__file__)}")
     unittest.main()
