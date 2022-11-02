@@ -240,6 +240,17 @@ class FiniteAutomaton():
             Equivalent minimal automaton.
 
         """
+        return self.to_deterministic()._deterministic_to_minimized()
+
+    def _deterministic_to_minimized(self) -> 'FiniteAutomaton':
+        """
+        Return a equivalent minimal automaton. 
+        self has to be deterministic
+
+        Returns:
+            Equivalent minimal automaton.
+
+        """
         accessible_states: List[State] = self._get_accessible_states()
         alphabet: Set[str] = utils.alphabet(states=accessible_states)
         final_states: Set[State] = utils.get_final_states(accessible_states)

@@ -1,4 +1,5 @@
 """Test evaluation of automatas."""
+from copy import deepcopy
 import os
 import unittest
 from abc import ABC, abstractmethod
@@ -14,6 +15,10 @@ from automata.re_parser import REParser
 def represent_dot(filename:str,automaton:FiniteAutomaton)->None:
     '''writes dot representation of automata in file 
     with name filename (only file name, not full path)'''
+    if any(len(state.name)>30 for state in automaton.states):
+        states = deepcopy(automaton.states)
+        REParser()._rename_states(states)
+        automaton = FiniteAutomaton(states)
     dir_path = os.path.dirname(os.path.realpath(__file__))+'/dot/'
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
@@ -21,7 +26,9 @@ def represent_dot(filename:str,automaton:FiniteAutomaton)->None:
         f.write(write_dot(automaton))
 
 class TestDeterministicBase(ABC, unittest.TestCase):
-    """Base class for string acceptance tests."""
+    """
+        Base class for string acceptance tests.
+    """
 
     automaton: FiniteAutomaton
     original: FiniteAutomaton
@@ -66,8 +73,12 @@ class TestDeterministicBase(ABC, unittest.TestCase):
                     self._check_accept_body(string, should_accept)
     
     def _check_deterministic(self) -> None:
-        '''comprueba que el self.automaton es determinista'''
+        '''comprueba que el self.automaton es determinista. Es decir,
+            todos los estados tienen una (y solo una) transición por cada símbolo
+        '''
         alphabet = utils.alphabet(self.original.states)
+
+        # Ver que en cada estado hay al menos una transición para cada símbolo
         self.assertTrue(
             all(# para cada estado
                 all(# para cada símbolo
@@ -80,6 +91,8 @@ class TestDeterministicBase(ABC, unittest.TestCase):
                 for state in self.automaton.states
             )
         )
+
+        # Ver que de hecho, solo hay exactamente una transición por cada símbolo.
         self.assertTrue(
             all(# para cada estado, hay tantas transiciones como símbolos
                 len(alphabet)==len(state.transitions)
@@ -126,7 +139,7 @@ class TestDeterministic_Hello(TestDeterministicBase):
 
 
 class TestDeterministic_Lambdas(TestDeterministicBase):
-    """Test for a fixed string."""
+    """Acepta solo la cadena vacía. """
 
     def _create_automata(self) -> FiniteAutomaton:
 
@@ -153,7 +166,7 @@ class TestDeterministic_Lambdas(TestDeterministicBase):
     
 
 class TestDeterministic_Number(TestDeterministicBase):
-    """Test for a fixed string."""
+    """Acepta números decimales, con el formato de la práctica anterior."""
 
     def _create_automata(self) -> FiniteAutomaton:
 
@@ -199,7 +212,11 @@ class TestDeterministic_Number(TestDeterministicBase):
 
 
 class TestDeterministic_WithParser(unittest.TestCase):
-    """Tests for to_deterministic method."""
+    """ 
+        Crea un automata a partir de una regex y lo convierte en un determinista.
+        Para probar su corrección, se comprueba que es en efecto determinista (_check_deterministic)
+        y que sigue aceptando (y rechazando) las mismas cadenas.
+    """
 
     original_evaluator: FiniteAutomatonEvaluator
 
@@ -293,7 +310,7 @@ class TestDeterministic_WithParser(unittest.TestCase):
         self._check_accept(evaluator, "babcccc", should_accept=False)
 
     def test_number(self) -> None:
-        """Test number expression."""
+        """Test decimal numbers that follow the format of the previous practice"""
         num = "(0+1+2+3+4+5+6+7+8+9)"
         evaluator, orig_aut, deter_aut = self._create_evaluator(
             f"({num}.{num}*.,.{num}*)+{num}*",
