@@ -69,53 +69,64 @@ class TestMinimizedBase(ABC, unittest.TestCase):
 
 
 
-class TestMinimized_Hello(TestMinimizedBase):
+# class TestMinimized_Hello(TestMinimizedBase):
+#     def _regex(self) -> str:
+#         return "H.e.l.l.o"
+#     def _min_states_num(self) -> int:
+#         return 7
+#     def _test_strings(self) -> List[str]:
+#         return ["Hello", "Hella", "hello", "", "Hiello"]
+
+#     def test_string(self)->None:
+#         self._test_string()
+
+# class TestMinimized_ABC(TestMinimizedBase):
+#     def _regex(self) -> str:
+#         return "a.b*.(a+c.b)*"
+#     def _min_states_num(self) -> int:
+#         return 5
+#     def _test_strings(self) -> List[str]:
+#         return ["abbb", "abcba", "aaacb", "", "acb", "bbb","aab","aba"]
+
+#     def test_string(self)->None:
+#         self._test_string()
+
+# class TestMinimized_AB(TestMinimizedBase):
+#     def _regex(self) -> str:
+#         return "(a+b)*"
+#     def _min_states_num(self) -> int:
+#         return 1
+#     def _test_strings(self) -> List[str]:
+#         return ["abbb", "abba", "aaab", "", "ab", "bbab","aab","aba"]
+
+#     def test_string(self)->None:
+#         self._test_string()
+
+# class TestMinimized_BAislada(TestMinimizedBase):
+#     def _regex(self) -> str:
+#         return "(λ+b).(a+a.b)*"
+#     def _min_states_num(self) -> int:
+#         return 3
+#     def _test_strings(self) -> List[str]:
+#         return ["babaaababaa", "babba", "abababb", "", "bab", "babab","abbab","bbaba"]
+
+#     def test_string(self)->None:
+#         self._test_string()
+
+class TestMinimized_BPares1(TestMinimizedBase):
     def _regex(self) -> str:
-        return "H.e.l.l.o"
+        return "(a*.b.a*.b.a*)*"
     def _min_states_num(self) -> int:
-        return 7
-    def _test_strings(self) -> List[str]:
-        return ["Hello", "Hella", "hello", "", "Hiello"]
-
-    def test_string(self)->None:
-        self._test_string()
-
-class TestMinimized_ABC(TestMinimizedBase):
-    def _regex(self) -> str:
-        return "a.b*.(a+c.b)*"
-    def _min_states_num(self) -> int:
-        return 5
-    def _test_strings(self) -> List[str]:
-        return ["abbb", "abcba", "aaacb", "", "acb", "bbb","aab","aba"]
-
-    def test_string(self)->None:
-        self._test_string()
-
-class TestMinimized_AB(TestMinimizedBase):
-    def _regex(self) -> str:
-        return "(a+b)*"
-    def _min_states_num(self) -> int:
-        return 1
-    def _test_strings(self) -> List[str]:
-        return ["abbb", "abba", "aaab", "", "ab", "bbab","aab","aba"]
-
-    def test_string(self)->None:
-        self._test_string()
-
-class TestMinimized_BAislada(TestMinimizedBase):
-    def _regex(self) -> str:
-        return "(λ+b).(a+a.b)*"
-    def _min_states_num(self) -> int:
-        return 3
+        return 2
     def _test_strings(self) -> List[str]:
         return ["babaaababaa", "babba", "abababb", "", "bab", "babab","abbab","bbaba"]
 
     def test_string(self)->None:
         self._test_string()
 
-class TestMinimized_BPares(TestMinimizedBase):
+class TestMinimized_BPares2(TestMinimizedBase):
     def _regex(self) -> str:
-        return "(a*.b.a*.b.a*)*"
+        return "(a+b.a*.b)*"
     def _min_states_num(self) -> int:
         return 2
     def _test_strings(self) -> List[str]:
