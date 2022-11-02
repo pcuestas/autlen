@@ -372,13 +372,11 @@ class utils:
     
             while expanding_states:
                 closure.update(expanding_states)
-                visited_states: Set[State] = set()
-                for state in expanding_states:
-                    visited_states.update(
-                        automaton.name2state[transition.state]
-                        for transition in state.transitions 
-                        if not transition.symbol and automaton.name2state[transition.state] not in closure
-                    )
+                visited_states: Set[State] = set(
+                    automaton.name2state[transition.state]
+                    for transition in sum([state.transitions for state in expanding_states],[])
+                    if not transition.symbol and automaton.name2state[transition.state] not in closure
+                )
                 expanding_states = visited_states
 
             closures[closure_state] = frozenset(closure)
