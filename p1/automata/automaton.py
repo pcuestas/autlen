@@ -40,9 +40,6 @@ class State():
 
     def __repr__(self) -> str:
         return (
-            f"\n\t{type(self).__name__}({self.name!r}, transitions={self.transitions!r})"
-        ) #TODO remove
-        return (
             f"{type(self).__name__}({self.name!r}, is_final={self.is_final!r}, transitions={self.transitions!r})"
         )
 
