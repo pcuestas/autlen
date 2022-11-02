@@ -144,7 +144,7 @@ class FiniteAutomaton():
 
     def to_deterministic(self) -> 'FiniteAutomaton':
         """
-        Return a equivalent deterministic automaton.
+        Return an equivalent deterministic automaton.
 
         Returns:
             Equivalent deterministic automaton.

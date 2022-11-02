@@ -1,0 +1,27 @@
+digraph {
+  rankdir=LR;
+
+  node [shape = point]; __start_point__
+  s0[shape=circle]
+  s11_12_5_6_8[shape=doublecircle]
+  s10_9[shape=circle]
+  empty[shape=circle]
+  s12_2_3_4_5_6_8[shape=doublecircle]
+
+  __start_point__ -> s0
+  s0 -> empty[label="b"]
+  s0 -> empty[label="c"]
+  s0 -> s12_2_3_4_5_6_8[label="a"]
+  s11_12_5_6_8 -> empty[label="b"]
+  s11_12_5_6_8 -> s11_12_5_6_8[label="a"]
+  s11_12_5_6_8 -> s10_9[label="c"]
+  s10_9 -> empty[label="c"]
+  s10_9 -> s11_12_5_6_8[label="b"]
+  s10_9 -> empty[label="a"]
+  empty -> empty[label="b"]
+  empty -> empty[label="c"]
+  empty -> empty[label="a"]
+  s12_2_3_4_5_6_8 -> s11_12_5_6_8[label="a"]
+  s12_2_3_4_5_6_8 -> s10_9[label="c"]
+  s12_2_3_4_5_6_8 -> s12_2_3_4_5_6_8[label="b"]
+}

@@ -12,13 +12,15 @@ from automata.re_parser import REParser
 
 
 def represent_dot(filename:str,automaton:FiniteAutomaton)->None:
+    '''writes dot representation of automata in file 
+    with name filename (only file name, not full path)'''
     dir_path = os.path.dirname(os.path.realpath(__file__))+'/dot/'
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
     with open(dir_path+filename, "w") as f:
         f.write(write_dot(automaton))
 
-class TestEvaluatorBase(ABC, unittest.TestCase):
+class TestDeterministicBase(ABC, unittest.TestCase):
     """Base class for string acceptance tests."""
 
     automaton: FiniteAutomaton
@@ -86,7 +88,7 @@ class TestEvaluatorBase(ABC, unittest.TestCase):
         )
 
     
-class TestHello(TestEvaluatorBase):
+class TestDeterministic_Hello(TestDeterministicBase):
     """Test for a fixed string."""
 
     def _create_automata(self) -> FiniteAutomaton:
@@ -123,7 +125,7 @@ class TestHello(TestEvaluatorBase):
         self._check_accept("Helloa", should_accept=False)
 
 
-class TestEvaluatorLambdas(TestEvaluatorBase):
+class TestDeterministic_Lambdas(TestDeterministicBase):
     """Test for a fixed string."""
 
     def _create_automata(self) -> FiniteAutomaton:
@@ -150,7 +152,7 @@ class TestEvaluatorLambdas(TestEvaluatorBase):
         self._check_accept("a", should_accept=False)
     
 
-class TestEvaluatorNumber(TestEvaluatorBase):
+class TestDeterministic_Number(TestDeterministicBase):
     """Test for a fixed string."""
 
     def _create_automata(self) -> FiniteAutomaton:
@@ -196,19 +198,24 @@ class TestEvaluatorNumber(TestEvaluatorBase):
         self._check_accept("0-0.0", should_accept=False)
 
 
-class TestREParser(unittest.TestCase):
+class TestDeterministic_WithParser(unittest.TestCase):
     """Tests for to_deterministic method."""
 
     original_evaluator: FiniteAutomatonEvaluator
 
     def _create_evaluator(
         self, 
-        regex: str
+        regex: str,
+        testname: str
     ) -> Tuple[FiniteAutomatonEvaluator, FiniteAutomaton, FiniteAutomaton]:
         original = REParser().create_automaton(regex)
-        automaton = original.to_deterministic()
+        deterministic = original.to_deterministic()
         self.original_evaluator = FiniteAutomatonEvaluator(original)
-        return FiniteAutomatonEvaluator(automaton), original, automaton
+
+        represent_dot(type(self).__name__ + testname + 'Original.dot', original)
+        represent_dot(type(self).__name__ + testname + 'Deterministic.dot', deterministic)
+
+        return FiniteAutomatonEvaluator(deterministic), original, deterministic
 
     def _check_accept(
         self,
@@ -224,19 +231,20 @@ class TestREParser(unittest.TestCase):
 
     def test_fixed(self) -> None:
         """Test fixed regex."""
-        evaluator, orig_aut, deter_aut = self._create_evaluator("H.e.l.l.o")
+        evaluator, orig_aut, deter_aut = self._create_evaluator("G.o.o.d.b.y.e", "Goodbye")
 
         self._check_deterministic(orig_aut,deter_aut)
 
-        self._check_accept(evaluator, "Hello", should_accept=True)
-        self._check_accept(evaluator, "Helloo", should_accept=False)
-        self._check_accept(evaluator, "Hell", should_accept=False)
-        self._check_accept(evaluator, "llH", should_accept=False)
+        self._check_accept(evaluator, "Goodbye", should_accept=True)
+        self._check_accept(evaluator, "Gooody", should_accept=False)
+        self._check_accept(evaluator, "ByeFD", should_accept=False)
+        self._check_accept(evaluator, "oodbye", should_accept=False)
+        self._check_accept(evaluator, "Goodbye.", should_accept=False)
         self._check_accept(evaluator, "", should_accept=False)
 
     def test_star(self) -> None:
         """Test Kleene star."""
-        evaluator, orig_aut, deter_aut = self._create_evaluator("a*.b*")
+        evaluator, orig_aut, deter_aut = self._create_evaluator("a*.b*", "StarConcat")
 
         self._check_deterministic(orig_aut, deter_aut)
         
@@ -254,27 +262,42 @@ class TestREParser(unittest.TestCase):
 
     def test_or(self) -> None:
         """Test Kleene star."""
-        evaluator, orig_aut, deter_aut = self._create_evaluator("(a+b)*")
+        evaluator, orig_aut, deter_aut = self._create_evaluator("(a+b)*.c", "OrStar")
 
         self._check_deterministic(orig_aut, deter_aut)
 
-        self._check_accept(evaluator, "", should_accept=True)
-        self._check_accept(evaluator, "a", should_accept=True)
-        self._check_accept(evaluator, "b", should_accept=True)
-        self._check_accept(evaluator, "aa", should_accept=True)
-        self._check_accept(evaluator, "bb", should_accept=True)
-        self._check_accept(evaluator, "ab", should_accept=True)
-        self._check_accept(evaluator, "ba", should_accept=True)
-        self._check_accept(evaluator, "aab", should_accept=True)
-        self._check_accept(evaluator, "abb", should_accept=True)
-        self._check_accept(evaluator, "aba", should_accept=True)
-        self._check_accept(evaluator, "bab", should_accept=True)
+        self._check_accept(evaluator, "c", should_accept=True)
+        self._check_accept(evaluator, "ac", should_accept=True)
+        self._check_accept(evaluator, "bc", should_accept=True)
+        self._check_accept(evaluator, "aac", should_accept=True)
+        self._check_accept(evaluator, "bbc", should_accept=True)
+        self._check_accept(evaluator, "abc", should_accept=True)
+        self._check_accept(evaluator, "bac", should_accept=True)
+        self._check_accept(evaluator, "aabc", should_accept=True)
+        self._check_accept(evaluator, "abbc", should_accept=True)
+        self._check_accept(evaluator, "abac", should_accept=True)
+        self._check_accept(evaluator, "babc", should_accept=True)
+        self._check_accept(evaluator, "", should_accept=False)
+        self._check_accept(evaluator, "ab", should_accept=False)
+        self._check_accept(evaluator, "ba", should_accept=False)
+        self._check_accept(evaluator, "aab", should_accept=False)
+        self._check_accept(evaluator, "abb", should_accept=False)
+        self._check_accept(evaluator, "aba", should_accept=False)
+        self._check_accept(evaluator, "bab", should_accept=False)
+        self._check_accept(evaluator, "cc", should_accept=False)
+        self._check_accept(evaluator, "acbc", should_accept=False)
+        self._check_accept(evaluator, "bca", should_accept=False)
+        self._check_accept(evaluator, "aabcc", should_accept=False)
+        self._check_accept(evaluator, "cabb", should_accept=False)
+        self._check_accept(evaluator, "abca", should_accept=False)
+        self._check_accept(evaluator, "babcccc", should_accept=False)
 
     def test_number(self) -> None:
         """Test number expression."""
         num = "(0+1+2+3+4+5+6+7+8+9)"
         evaluator, orig_aut, deter_aut = self._create_evaluator(
             f"({num}.{num}*.,.{num}*)+{num}*",
+            "NumberExpression"
         )
         self._check_deterministic(orig_aut, deter_aut)
 
@@ -293,14 +316,20 @@ class TestREParser(unittest.TestCase):
     ) -> None:
         alphabet = utils.alphabet(original.states)
         self.assertTrue(
-            all(
-                all(
-                    any(
+            all(# para cada estado
+                all(# para cada símbolo
+                    any(# existe alguna transición 
                         transition.symbol==symbol
                         for transition in state.transitions 
                     )
                     for symbol in alphabet
                 )
+                for state in deterministic.states
+            )
+        )
+        self.assertTrue(
+            all(# para cada estado, hay tantas transiciones como símbolos
+                len(alphabet)==len(state.transitions)
                 for state in deterministic.states
             )
         )
