@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# este script genera las imágenes de los autómatas
+# a partir de los .dot generados por
+# our_test_to_deterministic.py y our_test_to_minimized.py  
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
