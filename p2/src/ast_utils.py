@@ -44,9 +44,6 @@ class ASTDotVisitor(ast.NodeVisitor):
     def generic_visit(self, node: AST) -> Any:
         self.idcounter = 0
         print("digraph {")
-        print(
-            f's{self.idcounter}[label="{type(node).__name__}()", shape=box]'
-        )
         self.rec_visit(node)
         print("}")
 
@@ -54,6 +51,12 @@ class ASTDotVisitor(ast.NodeVisitor):
     
     def rec_visit(self, node: AST) -> None:
         pid = self.idcounter
+        print(
+            's{}[label="{}({})", shape=box]'.
+            format(
+                self.idcounter, type(node).__name__, self.my_vars(node)
+            )
+        )
         for field, value in iter_fields(node):
             if isinstance(value, list) and value:
                 for item in value:
@@ -66,22 +69,14 @@ class ASTDotVisitor(ast.NodeVisitor):
 
         self.idcounter += 1
         print(
-            's{}[label="{}({})", shape=box]'.
-            format(
-                self.idcounter,
-                type(node).__name__,
-                ",".join(
-                    f"{key}='{value}'" 
-                    for key, value in vars(node).items()
-                    if hasattr(eval(f"node.{key}"), '__iter__'))
-            )
-        )
-        print(
             f's{pid} -> s{self.idcounter}[label="{field}"]'
         )
-
         self.rec_visit(node)
 
     
-    def my_vars(object: Any):
-        return {key:attribute for key,attribute in vars(object) if key in MY_ATTRIBUTES}
+    def my_vars(self, object: Any):
+        return ",".join(
+            f"{key}='{value}'" 
+            for key,value in vars(object) 
+            if key in MY_ATTRIBUTES
+        )
