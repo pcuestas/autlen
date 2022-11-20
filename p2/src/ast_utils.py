@@ -44,29 +44,25 @@ class ASTDotVisitor(ast.NodeVisitor):
     def generic_visit(self, node: AST) -> Any:
         self.idcounter = 0
         print("digraph {")
-        self.rec_visit(node)
+        self.visit_node(node)
         print("}")
 
-    def rec_visit(self, node: AST) -> None:
-        pid = self.idcounter
-        print(
-            's{}[label="{}({})", shape=box]'.
-            format(
-                self.idcounter, type(node).__name__, self.my_vars(node)
-            )
-        )
+    def visit_node(self, node: AST) -> None:
+        nodeid = self.idcounter
+        print('s{}[label="{}({})", shape=box]'.
+              format(nodeid, type(node).__name__, self.my_vars(node)))
 
         for field, value in iter_fields(node):
             if isinstance(value, list) and value:
                 for item in value:
-                    self.print_item(field, item, pid)
+                    self.visit_child_node(field, item, nodeid)
             elif isinstance(value, AST):
-                self.print_item(field, value, pid)
+                self.visit_child_node(field, value, nodeid)
 
-    def print_item(self, field: str, node: AST, pid: int) -> Any:
+    def visit_child_node(self, field: str, node: AST, parentid: int) -> Any:
         self.idcounter += 1
-        print(f's{pid} -> s{self.idcounter}[label="{field}"]')
-        self.rec_visit(node)
+        print(f's{parentid} -> s{self.idcounter}[label="{field}"]')
+        self.visit_node(node)
 
     def my_vars(self, object: Any) -> str:
         return ", ".join(
