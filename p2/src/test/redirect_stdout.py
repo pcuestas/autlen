@@ -3,6 +3,9 @@ from io import StringIO
 
 
 class RedirectedStdout:
+    '''
+    https://stackoverflow.com/a/45899925
+    '''
     def __init__(self):
         self._stdout = None
         self._string_io = None

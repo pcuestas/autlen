@@ -4,15 +4,16 @@ from ast import (
 )
 from typing import Any
 
-MY_ATTRIBUTES = ["name", "returns", "vararg", "kwarg", 
-"type_comment", "arg", "annotation", "value", "kind",]
+ATTRIBUTES = [
+    "name", "returns", "vararg", "kwarg", "type_comment", "arg", "annotation",
+    "value", "kind", "id",
+]
 
 
 class ASTNestedForCounter(ast.NodeVisitor):
 
     def generic_visit(self, node: AST) -> int:
         maxdepth = 0
-        print(type(node).__name__)
         for _, value in iter_fields(node):
             if isinstance(value, list) and value:
                 maxdepth = max(
@@ -43,43 +44,33 @@ class ASTDotVisitor(ast.NodeVisitor):
     def generic_visit(self, node: AST) -> Any:
         self.idcounter = 0
         print("digraph {")
-        print(
-            's{}[label="{}({})", shape=box]'.
-            format(
-                self.idcounter, type(node).__name__, self.my_vars(node)
-            )
-        )
         self.rec_visit(node)
         print("}")
 
     def rec_visit(self, node: AST) -> None:
         pid = self.idcounter
-        
-        for field, value in iter_fields(node):
-            if isinstance(value, list) and value:
-                for item in value:
-                    self.print_item(field, item, pid)
-
-            elif isinstance(value, AST):
-                self.print_item(field, value, pid)
-
-    def print_item(self, field: str, node: AST, pid: int) -> Any:
-
-        self.idcounter += 1
         print(
             's{}[label="{}({})", shape=box]'.
             format(
                 self.idcounter, type(node).__name__, self.my_vars(node)
             )
         )
-        print(
-            f's{pid} -> s{self.idcounter}[label="{field}"]'
-        )
+
+        for field, value in iter_fields(node):
+            if isinstance(value, list) and value:
+                for item in value:
+                    self.print_item(field, item, pid)
+            elif isinstance(value, AST):
+                self.print_item(field, value, pid)
+
+    def print_item(self, field: str, node: AST, pid: int) -> Any:
+        self.idcounter += 1
+        print(f's{pid} -> s{self.idcounter}[label="{field}"]')
         self.rec_visit(node)
 
     def my_vars(self, object: Any) -> str:
-        return ",".join(
+        return ", ".join(
             f"{key}='{value}'"
             for key, value in vars(object).items()
-            if key in MY_ATTRIBUTES
+            if not isinstance(value, (ast.AST, list)) and key in ATTRIBUTES
         )
