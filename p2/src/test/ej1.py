@@ -10,19 +10,22 @@ from src.test.redirect_stdout import RedirectedStdout
 
 pics_dir: str = ''
 
-def set_up()-> None:
+
+def set_up() -> None:
     global pics_dir
     pics_dir = os.path.dirname(os.path.realpath(__file__)) + '/../../pics/'
     if not os.path.exists(pics_dir):
         os.makedirs(pics_dir)
 
-def fun1(p:Any) -> None:
+
+def fun1(p):
     for a in [10, 20, 30]:
         print(a)
     for x in range(10):
         print(x)
 
-def fun2(p:Any) -> None:
+
+def fun2(p):
     for a in [10, 20, 30]:
         print(a)
     for i in [10, 20, 30]:
@@ -31,7 +34,7 @@ def fun2(p:Any) -> None:
                 print(i)
 
 
-def print_if_pos(num:Any) -> None:
+def print_if_pos(num):
     if num > 0:
         print(num)
 
@@ -62,7 +65,7 @@ def main_b() -> None:
 
     with RedirectedStdout() as out:
         counter.visit(my_ast)
-    
+
     print(out)
     graph, = pydot.graph_from_dot_data(str(out))
     graph.write_png(pics_dir + 'ex1b.png')
