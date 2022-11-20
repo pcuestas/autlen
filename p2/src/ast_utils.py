@@ -4,7 +4,8 @@ from ast import (
 )
 from typing import Any
 
-MY_ATTRIBUTES = ["name","returns","vararg","kwarg",]
+MY_ATTRIBUTES = ["name", "returns", "vararg", "kwarg", ]
+
 
 class ASTNestedForCounter(ast.NodeVisitor):
 
@@ -14,12 +15,12 @@ class ASTNestedForCounter(ast.NodeVisitor):
         for _, value in iter_fields(node):
             if isinstance(value, list) and value:
                 maxdepth = max(
-                    maxdepth, 
+                    maxdepth,
                     *[self.item_visit(item) for item in value]
-                )            
+                )
             elif value:
                 maxdepth = max(maxdepth, self.item_visit(value))
-        
+
         return maxdepth
 
     def item_visit(self, node: Any) -> int:
@@ -30,25 +31,20 @@ class ASTNestedForCounter(ast.NodeVisitor):
         else:
             return 0
 
-    def visit_For(self, node: ast.For):
+    def visit_For(self, node: ast.For) -> int:
         return 1 + self.generic_visit(node)
 
 
-class ASTDotVisitor(ast.NodeVisitor): 
+class ASTDotVisitor(ast.NodeVisitor):
 
-    idcounter : int
+    idcounter: int
 
-
-    attributes : dict()
-    
     def generic_visit(self, node: AST) -> Any:
         self.idcounter = 0
         print("digraph {")
         self.rec_visit(node)
         print("}")
 
-
-    
     def rec_visit(self, node: AST) -> None:
         pid = self.idcounter
         print(
@@ -61,11 +57,11 @@ class ASTDotVisitor(ast.NodeVisitor):
             if isinstance(value, list) and value:
                 for item in value:
                     self.print_item(field, item, pid)
-                    
+
             elif isinstance(value, AST):
                 self.print_item(field, value, pid)
 
-    def print_item(self, field: str, node: AST, pid: int)->Any:
+    def print_item(self, field: str, node: AST, pid: int) -> Any:
 
         self.idcounter += 1
         print(
@@ -73,10 +69,9 @@ class ASTDotVisitor(ast.NodeVisitor):
         )
         self.rec_visit(node)
 
-    
-    def my_vars(self, object: Any):
+    def my_vars(self, object: Any) -> str:
         return ",".join(
-            f"{key}='{value}'" 
-            for key,value in vars(object) 
+            f"{key}='{value}'"
+            for key, value in vars(object).items()
             if key in MY_ATTRIBUTES
         )
