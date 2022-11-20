@@ -35,6 +35,24 @@ def fun2(p):
                 print(i)
 
 
+def fun3():
+    for _ in "asd":
+        for _ in "abc":
+            for _ in "abc":
+                pass 
+            for _ in "abc":
+                for _ in "abc":
+                    for _ in "abc":
+                        pass
+    for _ in "asd":
+        for _ in "asd":
+            for _ in "abc":
+                pass
+            for _ in "asd":
+                for _ in "asd":
+                    pass
+
+
 def print_if_pos(num):
     if num > 0:
         print(num)
@@ -45,15 +63,15 @@ def main_a() -> None:
     print("Beginning exercise 1, (a) ...")
     counter = ASTNestedForCounter()
 
-    source = inspect.getsource(fun1)
-    my_ast = ast.parse(source)
-    maxdepth = counter.visit(my_ast)
-    assert maxdepth == 1, f"fun1: Expected 1, got {maxdepth}"
+    def check_fun(fun, expected):
+        source = inspect.getsource(fun)
+        my_ast = ast.parse(source)
+        maxdepth = counter.visit(my_ast)
+        assert expected == maxdepth, f"Expected {expected}, got {maxdepth}"
 
-    source = inspect.getsource(fun2)
-    my_ast = ast.parse(source)
-    maxdepth = counter.visit(my_ast)
-    assert maxdepth == 3, f"fun2: Expected 3, got {maxdepth}"
+    check_fun(fun1, 1)
+    check_fun(fun2, 3)
+    check_fun(fun3, 5)
 
     print("Ending exercise 1, (a). Everything is OK.")
 
