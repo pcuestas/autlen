@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from typing import AbstractSet, Collection, MutableSet, Optional, Dict, List, Optional
-from copy import copy
+
 class RepeatedCellError(Exception):
     """Exception for repeated cells in LL(1) tables."""
 
