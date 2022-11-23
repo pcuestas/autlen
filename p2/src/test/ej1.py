@@ -110,13 +110,16 @@ def main_b() -> None:
 
     
 def main_c() -> None:
-    print("TEXT c")
+    print("##################################################################")
+    print("Beginning exercise 1, (c) ...")
     source = inspect.getsource(fun4)
     my_ast = ast.parse(source)
     print(source)
     repl = ASTReplacerVar("num", ast.Constant(0))
     repl.visit(my_ast)
     print(ast.unparse(my_ast))
+
+    print(f"Ending exercise 1, (c). Output written to {pics_dir}ex1d.png")
 
 def main_d() -> None:
     print("##################################################################")
@@ -125,9 +128,6 @@ def main_d() -> None:
     unroll = ASTUnroll()
     source = inspect.getsource(fun5)
     my_ast = ast.parse(source)
-
-    print('Original: ', source)
-
     unroll.visit(my_ast)
     
     print(ast.unparse(my_ast))
@@ -137,7 +137,7 @@ def main_d() -> None:
 
 if __name__ == '__main__':
     set_up()
-    # main_a()
-    # main_b()
+    main_a()
+    main_b()
     main_c()
     main_d()
