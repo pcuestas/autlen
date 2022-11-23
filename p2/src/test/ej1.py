@@ -53,6 +53,17 @@ def fun3():
                     pass
 
 
+def fun4(p):
+    for a in [10, 20, 30]:
+        print(a)
+        for b in [1, 2, 3]:
+            print(2 * a + b)
+    for x in range(10):
+        print(x)
+    for i, x in enumerate([10, 20, 30]):
+        print(i, x)
+        
+
 def print_if_pos(num):
     if num > 0:
         print(num)
@@ -96,25 +107,19 @@ def main_b() -> None:
 def main_d() -> None:
     print("##################################################################")
     print("Beginning exercise 1, (d) ...")
-    def fun4(p):
-        for a in [10, 20, 30]:
-            print(a)
-            for b in [1, 2, 3]:
-                print(2 * a + b)
-        for x in range(10):
-            print(x)
-        for i, x in enumerate([10, 20, 30]):
-            print(i, x)
 
-    unroll = ASTUnroll()
+    # unroll = ASTUnroll()
     source = inspect.getsource(fun4)
     my_ast = ast.parse(source)
-    unroll.visit(my_ast)
+    # unroll.visit(my_ast)
+    
     print(ast.unparse(my_ast))
-
+    print(ast.dump(my_ast, indent=4))
+    
     print(f"Ending exercise 1, (d). Output written to {pics_dir}ex1d.png")
 
 if __name__ == '__main__':
     set_up()
-    main_a()
-    main_b()
+    # main_a()
+    # main_b()
+    main_d()

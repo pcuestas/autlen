@@ -92,26 +92,42 @@ class ASTReplacerVar(ast.NodeTransformer):
 
 class ASTUnroll(ast.NodeTransformer):
 
-    def generic_visit(self, node: ast.AST) -> ast.AST:
-        if isinstance(node, ast.For):
-            return self.visit_For(node)
-        else:
-            return
-
     def visit_For(self, node: ast.For) -> ast.For:
-        if isinstance(node.iter, ast.Call):
-            if isinstance(node.iter.func, ast.Name):
-                if node.iter.func.id == "range":
-                    if len(node.iter.args) == 1:
-                        return self.unroll_for(node, node.iter.args[0])
-                    elif len(node.iter.args) == 2:
-                        return self.unroll_for(node, node.iter.args[1])
-                    elif len(node.iter.args) == 3:
-                        return self.unroll_for(node, node.iter.args[2])
-        return node
+        ast.NodeTransformer.generic_visit(self, node)
+        
+        if not (
+            isinstance(node.iter, ast.List) and 
+            isinstance(node.target, ast.Name)
+        ):
+            return node
+        # en caso iter tipo List y target tipo Name:
 
-    def unroll_for(self, node: ast.For, n: int) -> ast.For:
-        body = []
-        for i in range(n):
-            body.append(ast.copy_location(ast.copy(node.body), node.body))
-        return ast.copy_location(ast.copy(body), body)
+        # quitar el for y sustituirla por un bloque de código desplegado
+        # con los elementos de la lista:
+        # for i in [1, 2, 3]:
+        #     print(i)
+        # 
+        # se sustituye por:
+        # print(1)
+        # print(2)
+        # print(3)
+
+        # 1. copiar el bloque de código dentro del for:
+        block = copy.deepcopy(node.body)
+        # 2. sustituir la variable del for por el elemento de la lista
+        #    que se está recorriendo en cada iteración:
+        for element in node.iter.elts:
+            # 3. sustituir la variable del for por el elemento de la lista
+            #    que se está recorriendo en cada iteración:
+            replacer = ASTReplacerVar(node.target, element)
+            for statement in block:
+                replacer.visit(statement)
+            # 4. añadir el bloque de código al AST:
+            node.body.extend(block)
+
+        # 5. eliminar el for:
+        # node.iter = ast.Constant(value=None)
+        # node.target = ast.Constant(value=None)
+        # node.body = []
+
+        return node
