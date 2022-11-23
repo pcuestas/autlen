@@ -40,6 +40,21 @@ class TestFirst(unittest.TestCase):
         self._check_first(grammar, "YX", {'+', '*', ''})
         self._check_first(grammar, "YXT", {'+', '*', 'i', '('})
 
+    def test_case2(self) -> None:
+        """Test Case 2."""
+        grammar_str = """
+        E -> X
+        X -> Y
+        Y -> E
+        Y -> i
+        """
+
+        grammar = GrammarFormat.read(grammar_str)
+        self._check_first(grammar, "E", {'i'})
+        self._check_first(grammar, "X", {'i'})
+        self._check_first(grammar, "Y", {'i'})
+        self._check_first(grammar, "i", {'i'})
+
 
 if __name__ == '__main__':
     unittest.main()
