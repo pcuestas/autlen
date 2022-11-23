@@ -4,7 +4,7 @@ import ast
 import inspect
 import pydot
 import os
-from src.ast_utils import ASTNestedForCounter, ASTDotVisitor, ASTUnroll
+from src.ast_utils import ASTNestedForCounter, ASTDotVisitor, ASTUnroll, ASTReplacerVar
 from typing import Any
 from src.test.redirect_stdout import RedirectedStdout
 from typing import Callable
@@ -52,6 +52,10 @@ def fun3():
                 for _ in "asd":
                     pass
 
+def fun4 (x):
+    num = x+2
+    if num > 0:
+        print(num)
 
 def fun4(p):
     for a in [10, 20, 30]:
@@ -103,6 +107,16 @@ def main_b() -> None:
 
     print(f"Ending exercise 1, (b). Output written to {pics_dir}ex1b.png")
 
+
+    
+def main_c() -> None:
+    print("TEXT c")
+    source = inspect.getsource(fun4)
+    my_ast = ast.parse(source)
+    print(source)
+    repl = ASTReplacerVar("num", ast.Constant(0))
+    repl.visit(my_ast)
+    print(ast.unparse(my_ast))
 
 def main_d() -> None:
     print("##################################################################")
