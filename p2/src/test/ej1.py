@@ -52,12 +52,12 @@ def fun3():
                 for _ in "asd":
                     pass
 
-def fun4 (x):
+def fun4(x):
     num = x+2
     if num > 0:
         print(num)
 
-def fun4(p):
+def fun5(p):
     for a in [10, 20, 30]:
         print(a)
         for b in [1, 2, 3]:
@@ -122,13 +122,16 @@ def main_d() -> None:
     print("##################################################################")
     print("Beginning exercise 1, (d) ...")
 
-    # unroll = ASTUnroll()
-    source = inspect.getsource(fun4)
+    unroll = ASTUnroll()
+    source = inspect.getsource(fun5)
     my_ast = ast.parse(source)
-    # unroll.visit(my_ast)
+
+    print('Original: ', source)
+
+    unroll.visit(my_ast)
     
     print(ast.unparse(my_ast))
-    print(ast.dump(my_ast, indent=4))
+    # print(ast.dump(my_ast, indent=4))
     
     print(f"Ending exercise 1, (d). Output written to {pics_dir}ex1d.png")
 
@@ -136,4 +139,5 @@ if __name__ == '__main__':
     set_up()
     # main_a()
     # main_b()
+    main_c()
     main_d()

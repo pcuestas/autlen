@@ -81,7 +81,7 @@ class ASTReplacerVar(ast.NodeTransformer):
         self.ast_tree = ast_tree
         self.variable_name = variable_name
 
-    def visit_Name(self, node):
+    def visit_Name(self, node) -> ast.AST:
         if node.id == self.variable_name and isinstance(node.ctx,ast.Load):
             return self.ast_tree
         return node
@@ -90,7 +90,7 @@ class ASTReplacerVar(ast.NodeTransformer):
 
 class ASTUnroll(ast.NodeTransformer):
 
-    def visit_For(self, node: ast.For) -> ast.For:
+    def visit_For(self, node: ast.For) -> list:
         ast.NodeTransformer.generic_visit(self, node)
         
         if not (
@@ -100,32 +100,17 @@ class ASTUnroll(ast.NodeTransformer):
             return node
         # en caso iter tipo List y target tipo Name:
 
-        # quitar el for y sustituirla por un bloque de código desplegado
-        # con los elementos de la lista:
-        # for i in [1, 2, 3]:
-        #     print(i)
-        # 
-        # se sustituye por:
-        # print(1)
-        # print(2)
-        # print(3)
-
-        # 1. copiar el bloque de código dentro del for:
-        block = copy.deepcopy(node.body)
-        # 2. sustituir la variable del for por el elemento de la lista
-        #    que se está recorriendo en cada iteración:
+        # new_body es el nuevo cuerpo que sustituirá al for 
+        new_body = []
+        # para cada elemento de la lista:
         for element in node.iter.elts:
-            # 3. sustituir la variable del for por el elemento de la lista
-            #    que se está recorriendo en cada iteración:
-            replacer = ASTReplacerVar(node.target, element)
+            # sustituir la variable del for por el elemento de la lista
+            # que se está recorriendo en cada iteración:
+            replacer = ASTReplacerVar(node.target.id, element)
+            block = copy.deepcopy(node.body)
             for statement in block:
                 replacer.visit(statement)
-            # 4. añadir el bloque de código al AST:
-            node.body.extend(block)
+            # añadir el bloque de código a la lista de nuevo código
+            new_body.extend(block)
 
-        # 5. eliminar el for:
-        # node.iter = ast.Constant(value=None)
-        # node.target = ast.Constant(value=None)
-        # node.body = []
-
-        return node
+        return new_body
