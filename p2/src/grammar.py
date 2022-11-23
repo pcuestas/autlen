@@ -209,10 +209,11 @@ class LL1Table:
             )
         
         #Inicializar stack y siguiente símbolo
-        next_symbol = input_string[0]
+        
         stack = list((start,"$"))
 
-        while stack:
+        while stack and input_string:
+            next_symbol = input_string[0]
             stack_top = stack.pop(0)
 
             if stack_top in self.non_terminals:
@@ -229,10 +230,7 @@ class LL1Table:
                     )
                 #Avanzar el input
                 input_string = input_string[1:]
-                if input_string=="":
-                    break
-
-                next_symbol = input_string[0]
+               
           
         if input_string=="" and stack==[]:
             #TO-DO: Hacer ej opcional con arbol de parseo
