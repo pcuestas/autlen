@@ -82,11 +82,9 @@ class ASTReplacerVar(ast.NodeTransformer):
         self.variable_name = variable_name
 
     def visit_Name(self, node):
-        return ast.Subscript(
-            value=ast.Name(id='data', ctx=ast.Load()),
-            slice=ast.Index(value=ast.Constant(value=node.id)),
-            ctx=node.ctx
-        )
+        if node.id == self.variable_name and isinstance(node.ctx,ast.Load):
+            return self.ast_tree
+        return node
 
             
 
