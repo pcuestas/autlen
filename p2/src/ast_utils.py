@@ -3,6 +3,7 @@ from ast import (
     AST, iter_fields
 )
 from typing import Any
+import copy
 
 ATTRIBUTES = [
     "name", "returns", "vararg", "kwarg", "type_comment", "arg", "annotation",
@@ -67,6 +68,50 @@ class ASTDotVisitor(ast.NodeVisitor):
     def my_vars(self, object: Any) -> str:
         return ", ".join(
             f"{key}='{value}'"
-            for key, value in vars(object).items()
-            if not isinstance(value, (ast.AST, list)) and key in ATTRIBUTES
+            for key, value in iter_fields(object)
+            if not isinstance(value, (ast.AST, list))
         )
+
+
+    # name.id string
+    # ctx=Load() 
+class ASTReplacerVar(ast.NodeTransformer):
+
+    def __init__(self, variable_name: ast.Name, ast_tree: ast.AST) -> None:
+        self.ast_tree = ast_tree
+        self.variable_name = variable_name
+
+    def visit_Name(self, node):
+        return ast.Subscript(
+            value=ast.Name(id='data', ctx=ast.Load()),
+            slice=ast.Index(value=ast.Constant(value=node.id)),
+            ctx=node.ctx
+        )
+
+            
+
+class ASTUnroll(ast.NodeTransformer):
+
+    def generic_visit(self, node: ast.AST) -> ast.AST:
+        if isinstance(node, ast.For):
+            return self.visit_For(node)
+        else:
+            return
+
+    def visit_For(self, node: ast.For) -> ast.For:
+        if isinstance(node.iter, ast.Call):
+            if isinstance(node.iter.func, ast.Name):
+                if node.iter.func.id == "range":
+                    if len(node.iter.args) == 1:
+                        return self.unroll_for(node, node.iter.args[0])
+                    elif len(node.iter.args) == 2:
+                        return self.unroll_for(node, node.iter.args[1])
+                    elif len(node.iter.args) == 3:
+                        return self.unroll_for(node, node.iter.args[2])
+        return node
+
+    def unroll_for(self, node: ast.For, n: int) -> ast.For:
+        body = []
+        for i in range(n):
+            body.append(ast.copy_location(ast.copy(node.body), node.body))
+        return ast.copy_location(ast.copy(body), body)
