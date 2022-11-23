@@ -2,7 +2,7 @@ import ast
 from ast import (
     AST, iter_fields
 )
-from typing import Any
+from typing import Any, Union, List
 import copy
 
 ATTRIBUTES = [
@@ -77,11 +77,14 @@ class ASTDotVisitor(ast.NodeVisitor):
     # ctx=Load() 
 class ASTReplacerVar(ast.NodeTransformer):
 
-    def __init__(self, variable_name: ast.Name, ast_tree: ast.AST) -> None:
+    ast_tree: ast.AST
+    variable_name: str
+
+    def __init__(self, variable_name: str, ast_tree: ast.AST) -> None:
         self.ast_tree = ast_tree
         self.variable_name = variable_name
 
-    def visit_Name(self, node) -> ast.AST:
+    def visit_Name(self, node: ast.Name) -> ast.AST:
         if node.id == self.variable_name and isinstance(node.ctx,ast.Load):
             return self.ast_tree
         return node
@@ -90,7 +93,7 @@ class ASTReplacerVar(ast.NodeTransformer):
 
 class ASTUnroll(ast.NodeTransformer):
 
-    def visit_For(self, node: ast.For) -> list:
+    def visit_For(self, node: ast.For) -> Union[List[Any], ast.For]:
         ast.NodeTransformer.generic_visit(self, node)
         
         if not (

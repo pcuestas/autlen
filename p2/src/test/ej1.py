@@ -52,10 +52,12 @@ def fun3():
                 for _ in "asd":
                     pass
 
+
 def fun4(x):
-    num = x+2
+    num = x + 2
     if num > 0:
         print(num)
+
 
 def fun5(p):
     for a in [10, 20, 30]:
@@ -66,7 +68,18 @@ def fun5(p):
         print(x)
     for i, x in enumerate([10, 20, 30]):
         print(i, x)
-        
+
+
+def fun6(p):
+    b=1
+    for a in [10, 20, b]:
+        print(a)
+        for x in range(a):
+            print(x, a)
+        for j in [1, 2]:
+            for i, x in enumerate([j, a, 30]):
+                print(i, x, a, j)
+
 
 def print_if_pos(num):
     if num > 0:
@@ -108,7 +121,6 @@ def main_b() -> None:
     print(f"Ending exercise 1, (b). Output written to {pics_dir}ex1b.png")
 
 
-    
 def main_c() -> None:
     print("##################################################################")
     print("Beginning exercise 1, (c) ...")
@@ -121,19 +133,26 @@ def main_c() -> None:
 
     print(f"Ending exercise 1, (c). Output written to {pics_dir}ex1d.png")
 
+
 def main_d() -> None:
     print("##################################################################")
     print("Beginning exercise 1, (d) ...")
 
     unroll = ASTUnroll()
-    source = inspect.getsource(fun5)
-    my_ast = ast.parse(source)
-    unroll.visit(my_ast)
-    
-    print(ast.unparse(my_ast))
-    # print(ast.dump(my_ast, indent=4))
-    
+
+    def test_d(fun: Callable) -> None:
+        source = inspect.getsource(fun)
+        my_ast = ast.parse(source)
+        unroll.visit(my_ast)
+
+        print(ast.unparse(my_ast), end='\n\n')
+        # print(ast.dump(my_ast, indent=4))
+
+    test_d(fun5)
+    test_d(fun6)
+
     print(f"Ending exercise 1, (d). Output written to {pics_dir}ex1d.png")
+
 
 if __name__ == '__main__':
     set_up()
