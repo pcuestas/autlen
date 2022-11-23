@@ -93,14 +93,14 @@ class TestAnalyze(unittest.TestCase):
 
         grammar = GrammarFormat.read(grammar_str)
 
-        self._check_analyze_from_grammar(grammar, "i*i$", "E")
-        self._check_analyze_from_grammar(grammar, "i*i+i$", "E")
-        self._check_analyze_from_grammar(grammar, "i*i+i+(i*i)$", "E")
-        self._check_analyze_from_grammar(grammar, "a", "E", exception=SyntaxError)
-        self._check_analyze_from_grammar(grammar, "(i$", "E", exception=SyntaxError)
-        self._check_analyze_from_grammar(grammar, "i*i$i", "E", exception=SyntaxError)
-        self._check_analyze_from_grammar(grammar, "i*i", "E", exception=SyntaxError)
-        self._check_analyze_from_grammar(grammar, "+i*i", "E", exception=SyntaxError)
+        # self._check_analyze_from_grammar(grammar, "i*i$", "E")
+        # self._check_analyze_from_grammar(grammar, "i*i+i$", "E")
+        # self._check_analyze_from_grammar(grammar, "i*i+i+(i*i)$", "E")
+        # self._check_analyze_from_grammar(grammar, "a", "E", exception=SyntaxError)
+        # self._check_analyze_from_grammar(grammar, "(i$", "E", exception=SyntaxError)
+        # self._check_analyze_from_grammar(grammar, "i*i$i", "E", exception=SyntaxError)
+        # self._check_analyze_from_grammar(grammar, "i*i", "E", exception=SyntaxError)
+        # self._check_analyze_from_grammar(grammar, "+i*i", "E", exception=SyntaxError)
 
     def test_case3(self) -> None:
         """Test for parse tree construction."""
@@ -121,19 +121,19 @@ class TestAnalyze(unittest.TestCase):
         for (nt, t, body) in cells:
             table.add_cell(nt, t, body)
 
-        t01 = ParseTree("λ")
-        t02 = ParseTree("X", [t01])
-        t03 = ParseTree("λ")
-        t04 = ParseTree("Y", [t03])
-        t05 = ParseTree("i")
-        t06 = ParseTree("T", [t05, t04])
-        t07 = ParseTree("*")
-        t08 = ParseTree("Y", [t07, t06])
-        t09 = ParseTree("i")
-        t10 = ParseTree("T", [t09, t08])
-        tree = ParseTree("E", [t10, t02])
+        # t01 = ParseTree("λ")
+        # t02 = ParseTree("X", [t01])
+        # t03 = ParseTree("λ")
+        # t04 = ParseTree("Y", [t03])
+        # t05 = ParseTree("i")
+        # t06 = ParseTree("T", [t05, t04])
+        # t07 = ParseTree("*")
+        # t08 = ParseTree("Y", [t07, t06])
+        # t09 = ParseTree("i")
+        # t10 = ParseTree("T", [t09, t08])
+        # tree = ParseTree("E", [t10, t02])
         
-        self._check_parse_tree(table, "i*i$", "E", tree)
+        # self._check_parse_tree(table, "i*i$", "E", tree)
 
 if __name__ == '__main__':
     unittest.main()

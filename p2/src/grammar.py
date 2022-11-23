@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from typing import AbstractSet, Collection, MutableSet, Optional, Dict, List, Optional
-
+from copy import copy
 class RepeatedCellError(Exception):
     """Exception for repeated cells in LL(1) tables."""
 
@@ -86,8 +86,55 @@ class Grammar:
             First set of str.
         """
 
-	# TO-DO: Complete this method for exercise 3...
+        first = set()
+        last_lambda = False
 
+        if any(s not in self.terminals and s not in self.non_terminals for s in sentence):
+            raise ValueError("Invalid symbol in sentence.")
+        
+        if sentence == "":
+            return {""}
+        
+        for item in sentence:
+            last_lambda = False
+            
+            if item in self.terminals:
+                first.add(item)
+                break
+            else:
+                aux_first = self.compute_first_non_terminal(item)
+                first.update(aux_first-{""})
+                if "" not in aux_first:
+                    break
+                else:
+                    last_lambda = True
+
+        if last_lambda:
+            first.add("")
+
+        return first
+
+    def compute_first_non_terminal(self, symbol: str) -> AbstractSet[str]:
+        """
+        Method to compute the first set of a non-terminal symbol.
+
+        Args:
+            symbol: non-terminal whose first set is to be computed.
+
+        Returns:
+            First set of symbol.
+        """
+
+        first = set()
+
+        if symbol not in self.non_terminals:
+            raise ValueError("Invalid symbol.")
+
+        for rhs in self.productions[symbol]:
+            first.update(self.compute_first(rhs))
+
+        return first
+    
 
     def compute_follow(self, symbol: str) -> AbstractSet[str]:
         """
@@ -212,7 +259,7 @@ class LL1Table:
         stack = list((start,"$"))
 
         while stack and input_string:
-            
+
             next_symbol = input_string[0]
             stack_top = stack.pop(0)
 
