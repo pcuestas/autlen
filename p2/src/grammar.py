@@ -208,11 +208,11 @@ class LL1Table:
                 "Input string contains symbols not included in the grammar.",
             )
         
-        #Inicializar stack y siguiente símbolo
-        
+        #Inicializar stack
         stack = list((start,"$"))
 
         while stack and input_string:
+            
             next_symbol = input_string[0]
             stack_top = stack.pop(0)
 
