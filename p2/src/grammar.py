@@ -74,7 +74,7 @@ class Grammar:
             f"productions={self.productions!r})"
         )
 
-
+    # TO-DO: Poner los tipos de AbstractSet ...
     def compute_first(self, sentence: str) -> AbstractSet[str]:
         """
         Method to compute the first set of a string.
@@ -97,7 +97,7 @@ class Grammar:
         
         for item in sentence:
             last_lambda = False
-            
+
             if item in self.terminals:
                 first.add(item)
                 break
