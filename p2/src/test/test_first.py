@@ -54,6 +54,7 @@ class TestFirst(unittest.TestCase):
         self._check_first(grammar, "X", {'i'})
         self._check_first(grammar, "Y", {'i'})
         self._check_first(grammar, "i", {'i'})
+        self._check_first(grammar, "", {''})
 
     def test_case3(self) -> None:
         """Ej. 1 de primero y siguiente. Hoja LR0/SLR1"""
@@ -76,6 +77,7 @@ class TestFirst(unittest.TestCase):
         self._check_first(grammar, ".XB", {'.'})
         self._check_first(grammar, "BBBBB", {'', '1', '0'})
         self._check_first(grammar, "BBBBB.", {'.', '1', '0'})
+        self._check_first(grammar, "", {''})
 
 
 if __name__ == '__main__':
