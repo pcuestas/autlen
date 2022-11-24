@@ -1,8 +1,8 @@
 import unittest
 from typing import AbstractSet
 
-from grammar.grammar import Grammar
-from grammar.utils import GrammarFormat
+from src.grammar import Grammar
+from src.utils import GrammarFormat
 
 
 class TestFollow(unittest.TestCase):
@@ -34,6 +34,21 @@ class TestFollow(unittest.TestCase):
         self._check_follow(grammar, "X", {'$', ')'})
         self._check_follow(grammar, "Y", {'$', ')', '+'})
 
+    def test_case2(self) -> None:
+        """Ej. 1 de primero y siguiente. Hoja LR0/SLR1"""
+        grammar_str = """
+        A -> BXB
+        X -> ,
+        X -> .
+        X -> e
+        B -> 0B
+        B -> 1B
+        B -> 
+        """
+        grammar = GrammarFormat.read(grammar_str)
+        self._check_follow(grammar, "A", {'$'})
+        self._check_follow(grammar, "B", {'$', 'e', '.', ','})
+        self._check_follow(grammar, "X", {'$', '1', '0'})
 
 if __name__ == '__main__':
     unittest.main()

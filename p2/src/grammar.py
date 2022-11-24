@@ -74,6 +74,7 @@ class Grammar:
 
         # self.first contiene el first de cada no terminal
         self.first = self.precompute_first()
+        self.follow = self.precompute_follow()
 
     def __repr__(self) -> str:
         return (
@@ -152,34 +153,35 @@ class Grammar:
         
         return first | {""}
 
+        '''
+        first = set()
+        last_lambda = False
 
-        # first = set()
-        # last_lambda = False
+        if any(s not in self.terminals and s not in self.non_terminals for s in sentence):
+            raise ValueError("Invalid symbol in sentence.")
 
-        # if any(s not in self.terminals and s not in self.non_terminals for s in sentence):
-        #     raise ValueError("Invalid symbol in sentence.")
+        if sentence == "":
+            return {""}
 
-        # if sentence == "":
-        #     return {""}
+        for item in sentence:
+            last_lambda = False
 
-        # for item in sentence:
-        #     last_lambda = False
+            if item in self.terminals:
+                first.add(item)
+                break
+            else:
+                aux_first = self.compute_first_non_terminal(item)
+                first.update(aux_first - {""})
+                if "" not in aux_first:
+                    break
+                else:
+                    last_lambda = True
 
-        #     if item in self.terminals:
-        #         first.add(item)
-        #         break
-        #     else:
-        #         aux_first = self.compute_first_non_terminal(item)
-        #         first.update(aux_first - {""})
-        #         if "" not in aux_first:
-        #             break
-        #         else:
-        #             last_lambda = True
+        if last_lambda:
+            first.add("")
 
-        # if last_lambda:
-        #     first.add("")
-
-        # return first
+        return first
+        '''
 
     def compute_first_symbol(self, symbol: str) -> AbstractSet[str]:
         """
@@ -196,17 +198,47 @@ class Grammar:
         if symbol in self.non_terminals:
             return self.first.get(symbol, set())
         
-        raise ValueError("Invalid symbol.")
-        
-        # first = set()
+        raise ValueError(f"Invalid symbol: {symbol}.")
+        '''
+        first = set()
 
-        # if symbol not in self.non_terminals:
-        #     raise ValueError("Invalid symbol.")
+        if symbol not in self.non_terminals:
+            raise ValueError("Invalid symbol.")
 
-        # for rhs in self.productions[symbol]:
-        #     first.update(self.compute_first(rhs))
+        for rhs in self.productions[symbol]:
+            first.update(self.compute_first(rhs))
 
-        # return first
+        return first'''
+
+    def precompute_follow(self) -> Dict[str, AbstractSet[str]]:
+        """
+        Method to compute the follow set of all non-terminal symbols.
+        """
+
+        follow: Dict[str, AbstractSet[str]] = {
+            nt: frozenset() for nt in self.non_terminals
+        }
+        follow[self.axiom] = {'$'}
+
+        # productions as a list of tuples
+        prod_list: List[Tuple[str, Union[str,None]]] = [
+            (nt, rhs) for nt in self.non_terminals
+            for rhs in self.productions.get(nt, [])
+        ]
+
+        prev_follow = {}
+
+        while prev_follow != follow:
+            prev_follow = copy.copy(follow)
+            for nt, rhs in prod_list:
+                for i, s in enumerate(rhs):
+                    if s in self.non_terminals:
+                        next_first = self.compute_first(rhs[i+1:])
+                        follow[s] = follow[s] | (next_first - {""}) | (
+                            frozenset() if "" not in next_first
+                            else follow[nt]
+                        )
+        return follow
 
     def compute_follow(self, symbol: str) -> AbstractSet[str]:
         """
@@ -219,7 +251,10 @@ class Grammar:
             Follow set of symbol.
         """
 
-        # TO-DO: Complete this method for exercise 4...
+        if symbol in self.non_terminals:
+            return self.follow.get(symbol, set())
+        
+        raise ValueError(f"Invalid symbol: {symbol}.")
 
     def get_ll1_table(self) -> Optional[LL1Table]:
         """
