@@ -55,6 +55,28 @@ class TestFirst(unittest.TestCase):
         self._check_first(grammar, "Y", {'i'})
         self._check_first(grammar, "i", {'i'})
 
+    def test_case3(self) -> None:
+        """Ej. 1 de primero y siguiente. Hoja LR0/SLR1"""
+        grammar_str = """
+        A -> BXB
+        X -> ,
+        X -> .
+        X -> e
+        B -> 0B
+        B -> 1B
+        B -> 
+        """
+
+        grammar = GrammarFormat.read(grammar_str)
+        self._check_first(grammar, "A", {'1', '0', 'e', ',', '.'})
+        self._check_first(grammar, "B", {'', '1', '0'})
+        self._check_first(grammar, "X", {'e', ',', '.'})
+        self._check_first(grammar, "XB", {'e', ',', '.'})
+        self._check_first(grammar, "BX", {'1', '0', 'e', ',', '.'})
+        self._check_first(grammar, ".XB", {'.'})
+        self._check_first(grammar, "BBBBB", {'', '1', '0'})
+        self._check_first(grammar, "BBBBB.", {'.', '1', '0'})
+
 
 if __name__ == '__main__':
     unittest.main()

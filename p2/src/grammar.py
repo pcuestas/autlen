@@ -2,15 +2,19 @@ from __future__ import annotations
 
 from collections import deque
 from typing import (
-    AbstractSet, Collection, MutableSet, Optional, Dict, List, Optional, Tuple
+    AbstractSet, Collection, MutableSet, Dict, List, Optional, 
+    Tuple, Union,
 )
 import copy
+
 
 class RepeatedCellError(Exception):
     """Exception for repeated cells in LL(1) tables."""
 
+
 class SyntaxError(Exception):
     """Exception for parsing errors."""
+
 
 class Grammar:
     """
@@ -47,7 +51,7 @@ class Grammar:
             raise ValueError(
                 f"Set of non-terminals and productions keys should be equal."
             )
-        
+
         for nt, rhs in productions.items():
             if not rhs:
                 raise ValueError(
@@ -67,7 +71,8 @@ class Grammar:
         self.non_terminals = non_terminals
         self.productions = productions
         self.axiom = axiom
-        print("productions", productions)
+
+        # self.first contiene el first de cada no terminal
         self.first = self.precompute_first()
 
     def __repr__(self) -> str:
@@ -86,43 +91,43 @@ class Grammar:
         Returns:
             Dictionary with the first set of all non-terminal symbols.
         """
-        print("enter precompute_first")
-        # init first with trivial cases
+
+        # init first with emtpy sets
         first: Dict[str, AbstractSet[str]] = {
-            nt: frozenset(
-                rhs[0] for rhs in set(self.productions.get(nt))-{""}
-                if rhs[0] in self.terminals
-            ) | ({"",} if "" in self.productions.get(nt) else set())
-            for nt in self.non_terminals
+            nt: frozenset() for nt in self.non_terminals
         }
-        print("first", first)
-        # productions with rhs starting with a non-terminal
-        ntprods: List[Tuple] = [
-            (nt, rhs) 
-            for nt in self.non_terminals 
-            for rhs in set(self.productions.get(nt))-{""}
-            if rhs[0] in self.non_terminals
+        # productions as a list of tuples
+        prod_list: List[Tuple[str, Union[str,None]]] = [
+            (nt, rhs) for nt in self.non_terminals
+            for rhs in self.productions.get(nt, [])
         ]
 
-        # to check for changes in first
-        prev_first: Dict[str, AbstractSet[str]] = {}
-
-        def add_firsts(fdict: Dict[str, AbstractSet[str]], nt: str, rhs: str) -> None:
+        def add_firsts(
+            fdict: Dict[str, AbstractSet[str]], nt: str, rhs: Optional[str]
+        ) -> AbstractSet[str]:
+            '''
+            indica los first de un no terminal que añadir a su first
+            si hay una transción nt -> rhs, dado un diccionario 
+            fdict de firsts
+            '''
             if not rhs:
                 return {""}
             elif rhs[0] in self.terminals:
                 return {rhs[0]}
-            else:
-                return first[rhs[0]] - {""} | (
-                    frozenset() if "" not in first[rhs[0]] 
+            else:  # rhs[0] in self.non_terminals
+                return (fdict.get(rhs[0],set()) - {""}) | (
+                    frozenset() if "" not in fdict.get(rhs[0],set())
                     else add_firsts(fdict, nt, rhs[1:])
                 )
 
+        # to check for changes in first
+        prev_first: Dict[str, AbstractSet[str]] = {}
+
         while first != prev_first:
             prev_first = copy.copy(first)
-            for nt, rhs in ntprods:
+            for nt, rhs in prod_list:
                 first[nt] = first[nt] | add_firsts(first, nt, rhs)
-        print("first", first)
+
         return first
 
     # TO-DO: Poner los tipos de AbstractSet ...
@@ -137,45 +142,62 @@ class Grammar:
             First set of str.
         """
 
-        first = set()
-        last_lambda = False
+        first: AbstractSet[str] = frozenset()
 
-        if any(s not in self.terminals and s not in self.non_terminals for s in sentence):
-            raise ValueError("Invalid symbol in sentence.")
+        for s in sentence:
+            sfirst = self.compute_first_symbol(s)
+            first = first | (sfirst - {""})
+            if "" not in sfirst:
+                return first
         
-        if sentence == "":
-            return {""}
-        
-        for item in sentence:
-            last_lambda = False
+        return first | {""}
 
-            if item in self.terminals:
-                first.add(item)
-                break
-            else:
-                aux_first = self.compute_first_non_terminal(item)
-                first.update(aux_first-{""})
-                if "" not in aux_first:
-                    break
-                else:
-                    last_lambda = True
 
-        if last_lambda:
-            first.add("")
+        # first = set()
+        # last_lambda = False
 
-        return first
+        # if any(s not in self.terminals and s not in self.non_terminals for s in sentence):
+        #     raise ValueError("Invalid symbol in sentence.")
 
-    def compute_first_non_terminal(self, symbol: str) -> AbstractSet[str]:
+        # if sentence == "":
+        #     return {""}
+
+        # for item in sentence:
+        #     last_lambda = False
+
+        #     if item in self.terminals:
+        #         first.add(item)
+        #         break
+        #     else:
+        #         aux_first = self.compute_first_non_terminal(item)
+        #         first.update(aux_first - {""})
+        #         if "" not in aux_first:
+        #             break
+        #         else:
+        #             last_lambda = True
+
+        # if last_lambda:
+        #     first.add("")
+
+        # return first
+
+    def compute_first_symbol(self, symbol: str) -> AbstractSet[str]:
         """
-        Method to compute the first set of a non-terminal symbol.
+        Method to compute the first set of a non-terminal/terminal symbol.
 
         Args:
-            symbol: non-terminal whose first set is to be computed.
+            symbol: non-terminal/terminal whose first set is to be computed.
 
         Returns:
             First set of symbol.
         """
-        return self.first.get(symbol)
+        if symbol in self.terminals:
+            return {symbol}
+        if symbol in self.non_terminals:
+            return self.first.get(symbol, set())
+        
+        raise ValueError("Invalid symbol.")
+        
         # first = set()
 
         # if symbol not in self.non_terminals:
@@ -185,9 +207,6 @@ class Grammar:
         #     first.update(self.compute_first(rhs))
 
         # return first
-    
-
-
 
     def compute_follow(self, symbol: str) -> AbstractSet[str]:
         """
@@ -200,8 +219,7 @@ class Grammar:
             Follow set of symbol.
         """
 
-	# TO-DO: Complete this method for exercise 4...
-
+        # TO-DO: Complete this method for exercise 4...
 
     def get_ll1_table(self) -> Optional[LL1Table]:
         """
@@ -211,8 +229,7 @@ class Grammar:
             LL(1) table for the grammar, or None if the grammar is not LL(1).
         """
 
-	# TO-DO: Complete this method for exercise 5...
-
+        # TO-DO: Complete this method for exercise 5...
 
     def is_ll1(self) -> bool:
         return self.get_ll1_table() is not None
@@ -243,7 +260,8 @@ class LL1Table:
 
         self.terminals: AbstractSet[str] = terminals
         self.non_terminals: AbstractSet[str] = non_terminals
-        self.cells: Dict[str, Dict[str, Optional[str]]] = {nt: {t: None for t in terminals} for nt in non_terminals}
+        self.cells: Dict[str, Dict[str, Optional[str]]] = {
+            nt: {t: None for t in terminals} for nt in non_terminals}
 
     def __repr__(self) -> str:
         return (
@@ -279,7 +297,7 @@ class LL1Table:
             raise ValueError(
                 "Trying to add cell whose body contains elements that are "
                 "not either terminals nor non terminals.",
-            )            
+            )
         if self.cells[non_terminal][terminal] is not None:
             raise RepeatedCellError(
                 f"Repeated cell ({non_terminal}, {terminal}).")
@@ -302,14 +320,14 @@ class LL1Table:
             SyntaxError: if the input string is not syntactically correct.
         """
 
-        #Comprobar que el input de entrada no contiene símbolos que no están en el alfabeto
+        # Comprobar que el input de entrada no contiene símbolos que no están en el alfabeto
         if any(terminal not in self.terminals for terminal in input_string):
             raise SyntaxError(
                 "Input string contains symbols not included in the grammar.",
             )
-        
-        #Inicializar stack
-        stack = list((start,"$"))
+
+        # Inicializar stack
+        stack = list((start, "$"))
 
         while stack and input_string:
 
@@ -321,28 +339,26 @@ class LL1Table:
                     raise SyntaxError(
                         f"There is no rule associated \
                         to ({stack_top}, {next_symbol}).")
-                
-                stack = list(self.cells[stack_top][next_symbol]) + stack
+
+                stack = list(self.cells[stack_top][next_symbol] or []) + stack
             else:
                 if stack_top != next_symbol:
                     raise SyntaxError(
-                        f"Syntax error. Expected {next_symbol}, found {stack_top}."
+                        f"Syntax error. Expected {next_symbol}, \
+                            found {stack_top}."
                     )
-                #Avanzar el input
+                # Avanzar el input
                 input_string = input_string[1:]
-               
-          
-        if input_string=="" and stack==[]:
-            #TO-DO: Hacer ej opcional con arbol de parseo
+
+        if not input_string and not stack:
+            # TO-DO: Hacer ej opcional con arbol de parseo
             return ParseTree("")
 
         raise SyntaxError(
             f"Error during sintax analysis."
         )
 
-	
-    
-    
+
 class ParseTree():
     """
     Parse Tree.
@@ -351,6 +367,7 @@ class ParseTree():
         root: root node of the tree.
         children: list of children, which are also ParseTree objects.
     """
+
     def __init__(self, root: str, children: Collection[ParseTree] = []) -> None:
         self.root = root
         self.children = children
