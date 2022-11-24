@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from collections import deque
 from typing import (
-    AbstractSet, Collection, MutableSet, Optional, Dict, List, Optional
+    AbstractSet, Collection, MutableSet, Optional, Dict, List, Optional, Tuple
 )
+import copy
 
 class RepeatedCellError(Exception):
     """Exception for repeated cells in LL(1) tables."""
@@ -66,6 +67,8 @@ class Grammar:
         self.non_terminals = non_terminals
         self.productions = productions
         self.axiom = axiom
+        print("productions", productions)
+        self.first = self.precompute_first()
 
     def __repr__(self) -> str:
         return (
@@ -75,6 +78,52 @@ class Grammar:
             f"axiom={self.axiom!r}, "
             f"productions={self.productions!r})"
         )
+
+    def precompute_first(self) -> Dict[str, AbstractSet[str]]:
+        """
+        Method to compute the first set of all non-terminal symbols.
+
+        Returns:
+            Dictionary with the first set of all non-terminal symbols.
+        """
+        print("enter precompute_first")
+        # init first with trivial cases
+        first: Dict[str, AbstractSet[str]] = {
+            nt: frozenset(
+                rhs[0] for rhs in set(self.productions.get(nt))-{""}
+                if rhs[0] in self.terminals
+            ) | ({"",} if "" in self.productions.get(nt) else set())
+            for nt in self.non_terminals
+        }
+        print("first", first)
+        # productions with rhs starting with a non-terminal
+        ntprods: List[Tuple] = [
+            (nt, rhs) 
+            for nt in self.non_terminals 
+            for rhs in set(self.productions.get(nt))-{""}
+            if rhs[0] in self.non_terminals
+        ]
+
+        # to check for changes in first
+        prev_first: Dict[str, AbstractSet[str]] = {}
+
+        def add_firsts(fdict: Dict[str, AbstractSet[str]], nt: str, rhs: str) -> None:
+            if not rhs:
+                return {""}
+            elif rhs[0] in self.terminals:
+                return {rhs[0]}
+            else:
+                return first[rhs[0]] - {""} | (
+                    frozenset() if "" not in first[rhs[0]] 
+                    else add_firsts(fdict, nt, rhs[1:])
+                )
+
+        while first != prev_first:
+            prev_first = copy.copy(first)
+            for nt, rhs in ntprods:
+                first[nt] = first[nt] | add_firsts(first, nt, rhs)
+        print("first", first)
+        return first
 
     # TO-DO: Poner los tipos de AbstractSet ...
     def compute_first(self, sentence: str) -> AbstractSet[str]:
@@ -126,17 +175,19 @@ class Grammar:
         Returns:
             First set of symbol.
         """
+        return self.first.get(symbol)
+        # first = set()
 
-        first = set()
+        # if symbol not in self.non_terminals:
+        #     raise ValueError("Invalid symbol.")
 
-        if symbol not in self.non_terminals:
-            raise ValueError("Invalid symbol.")
+        # for rhs in self.productions[symbol]:
+        #     first.update(self.compute_first(rhs))
 
-        for rhs in self.productions[symbol]:
-            first.update(self.compute_first(rhs))
-
-        return first
+        # return first
     
+
+
 
     def compute_follow(self, symbol: str) -> AbstractSet[str]:
         """
