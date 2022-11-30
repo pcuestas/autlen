@@ -1,7 +1,6 @@
 import sys
 from io import StringIO
-from typing import TextIO, Union
-
+from typing import TextIO, Union, Any
 
 class RedirectedStdout(object):
     '''
@@ -20,7 +19,7 @@ class RedirectedStdout(object):
         sys.stdout = self._string_io = StringIO()
         return self
 
-    def __exit__(self, type, value, traceback) -> None:
+    def __exit__(self, type: Any, value: Any, traceback:Any) -> None:
         sys.stdout = self._stdout
 
     def __str__(self) -> str:

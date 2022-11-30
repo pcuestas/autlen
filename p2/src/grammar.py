@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from collections import deque
 from typing import (
-    AbstractSet, Collection, MutableSet, Dict, List, Optional, 
-    Tuple, Union,
+    AbstractSet, Callable, Collection, Dict, List, Optional, 
+    Tuple, Iterable
 )
 import copy
 
@@ -85,6 +84,8 @@ class Grammar:
             f"productions={self.productions!r})"
         )
 
+
+
     def precompute_first(self) -> Dict[str, AbstractSet[str]]:
         """
         Method to compute the first set of all non-terminal symbols.
@@ -97,11 +98,6 @@ class Grammar:
         first: Dict[str, AbstractSet[str]] = {
             nt: frozenset() for nt in self.non_terminals
         }
-        # productions as a list of tuples
-        prod_list: List[Tuple[str, Union[str,None]]] = [
-            (nt, rhs) for nt in self.non_terminals
-            for rhs in self.productions.get(nt, [])
-        ]
 
         def add_firsts(
             fdict: Dict[str, AbstractSet[str]], nt: str, rhs: Optional[str]
@@ -126,12 +122,14 @@ class Grammar:
 
         while first != prev_first:
             prev_first = copy.copy(first)
-            for nt, rhs in prod_list:
-                first[nt] = first[nt] | add_firsts(first, nt, rhs)
+            for nt, nt_rhs in self.productions.items():
+                for rhs in nt_rhs:
+                    first[nt] = first[nt] | add_firsts(first, nt, rhs)
 
         return first
 
-    # TO-DO: Poner los tipos de AbstractSet ...
+
+
     def compute_first(self, sentence: str) -> AbstractSet[str]:
         """
         Method to compute the first set of a string.
@@ -142,9 +140,7 @@ class Grammar:
         Returns:
             First set of str.
         """
-
         first: AbstractSet[str] = frozenset()
-
         for s in sentence:
             sfirst = self.compute_first_symbol(s)
             first = first | (sfirst - {""})
@@ -153,36 +149,8 @@ class Grammar:
         
         return first | {""}
 
-        '''
-        first = set()
-        last_lambda = False
 
-        if any(s not in self.terminals and s not in self.non_terminals for s in sentence):
-            raise ValueError("Invalid symbol in sentence.")
-
-        if sentence == "":
-            return {""}
-
-        for item in sentence:
-            last_lambda = False
-
-            if item in self.terminals:
-                first.add(item)
-                break
-            else:
-                aux_first = self.compute_first_non_terminal(item)
-                first.update(aux_first - {""})
-                if "" not in aux_first:
-                    break
-                else:
-                    last_lambda = True
-
-        if last_lambda:
-            first.add("")
-
-        return first
-        '''
-
+        
     def compute_first_symbol(self, symbol: str) -> AbstractSet[str]:
         """
         Method to compute the first set of a non-terminal/terminal symbol.
@@ -199,16 +167,8 @@ class Grammar:
             return self.first.get(symbol, set())
         
         raise ValueError(f"Invalid symbol: {symbol}.")
-        '''
-        first = set()
 
-        if symbol not in self.non_terminals:
-            raise ValueError("Invalid symbol.")
 
-        for rhs in self.productions[symbol]:
-            first.update(self.compute_first(rhs))
-
-        return first'''
 
     def precompute_follow(self) -> Dict[str, AbstractSet[str]]:
         """
@@ -220,25 +180,22 @@ class Grammar:
         }
         follow[self.axiom] = {'$'}
 
-        # productions as a list of tuples
-        prod_list: List[Tuple[str, Union[str,None]]] = [
-            (nt, rhs) for nt in self.non_terminals
-            for rhs in self.productions.get(nt, [])
-        ]
-
-        prev_follow = {}
+        prev_follow: Dict[str, AbstractSet[str]] = {}
 
         while prev_follow != follow:
             prev_follow = copy.copy(follow)
-            for nt, rhs in prod_list:
-                for i, s in enumerate(rhs):
-                    if s in self.non_terminals:
-                        next_first = self.compute_first(rhs[i+1:])
-                        follow[s] = follow[s] | (next_first - {""}) | (
-                            frozenset() if "" not in next_first
-                            else follow[nt]
-                        )
+            for nt, nt_rhs in self.productions.items():
+                for rhs in nt_rhs:
+                    for i, s in enumerate(rhs):
+                        if s in self.non_terminals:
+                            next_first = self.compute_first(rhs[i+1:])
+                            follow[s] = follow[s] | (next_first - {""}) | (
+                                frozenset() if "" not in next_first
+                                else follow[nt]
+                            )
         return follow
+
+
 
     def compute_follow(self, symbol: str) -> AbstractSet[str]:
         """
@@ -256,6 +213,8 @@ class Grammar:
         
         raise ValueError(f"Invalid symbol: {symbol}.")
 
+
+
     def get_ll1_table(self) -> Optional[LL1Table]:
         """
         Method to compute the LL(1) table.
@@ -264,7 +223,23 @@ class Grammar:
             LL(1) table for the grammar, or None if the grammar is not LL(1).
         """
 
-        # TO-DO: Complete this method for exercise 5...
+        table = LL1Table(
+            non_terminals=self.non_terminals, 
+            terminals=self.terminals|{"$"}
+        )
+        
+        for nt, nt_rhs in self.productions.items():
+            for rhs in nt_rhs:
+                first_rhs = self.compute_first(rhs)
+                for term in first_rhs-{""}:
+                    table.add_cell(nt,term,rhs)
+                if "" in first_rhs:
+                    for term in self.compute_follow(nt):
+                        table.add_cell(nt,term,rhs)
+
+        return table
+      
+
 
     def is_ll1(self) -> bool:
         return self.get_ll1_table() is not None
@@ -355,39 +330,60 @@ class LL1Table:
             SyntaxError: if the input string is not syntactically correct.
         """
 
-        # Comprobar que el input de entrada no contiene símbolos que no están en el alfabeto
+        
         if any(terminal not in self.terminals for terminal in input_string):
             raise SyntaxError(
                 "Input string contains symbols not included in the grammar.",
             )
 
-        # Inicializar stack
-        stack = list((start, "$"))
-
+        # init stack (symbol,id). id references its parse tree 
+        stack: List[Tuple[str, int]] = list(((start,0), ("$",-1)))
+        idcount: int = 1
+        # dictionary contains id: parse tree
+        id_tree_dict: Dict[int, ParseTree] = {0:ParseTree(start,[])}
+        
         while stack and input_string:
-
             next_symbol = input_string[0]
-            stack_top = stack.pop(0)
-
+            stack_top, stack_top_id = stack.pop(0)
+            
             if stack_top in self.non_terminals:
                 if self.cells[stack_top][next_symbol] is None:
                     raise SyntaxError(
                         f"There is no rule associated \
                         to ({stack_top}, {next_symbol}).")
 
-                stack = list(self.cells[stack_top][next_symbol] or []) + stack
+                ids:Callable[[],Iterable[int]] = \
+                    lambda: range(idcount,idcount+len(rhs))
+                rhs_ids: Callable[[],Iterable[Tuple[str, int]]] = \
+                    lambda: zip(rhs, ids())
+
+                # Add rhs of production to the stack
+                rhs = list(self.cells[stack_top][next_symbol] or [])
+                stack = list(rhs_ids()) + stack
+                
+                rhs = rhs if rhs else [""]  # in case rhs="λ"
+
+                # Create sub-ParseTrees for each symbol in the rhs
+                # And add them as children of stack_top
+                for _sym, _id in rhs_ids():
+                    id_tree_dict[_id] = ParseTree(_sym if _sym else "λ",[])
+                
+                id_tree_dict[stack_top_id].add_children([
+                    id_tree_dict[i] for i in ids()
+                ])
+
+                idcount += len(rhs)
             else:
                 if stack_top != next_symbol:
                     raise SyntaxError(
                         f"Syntax error. Expected {next_symbol}, \
                             found {stack_top}."
                     )
-                # Avanzar el input
+                # Shift input
                 input_string = input_string[1:]
 
         if not input_string and not stack:
-            # TO-DO: Hacer ej opcional con arbol de parseo
-            return ParseTree("")
+            return id_tree_dict[0]
 
         raise SyntaxError(
             f"Error during sintax analysis."
