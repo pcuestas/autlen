@@ -131,7 +131,6 @@ def main_c() -> None:
     repl.visit(my_ast)
     print(ast.unparse(my_ast))
 
-    print(f"Ending exercise 1, (c). Output written to {pics_dir}ex1d.png")
 
 
 def main_d() -> None:
@@ -151,7 +150,6 @@ def main_d() -> None:
     test_d(fun5)
     test_d(fun6)
 
-    print(f"Ending exercise 1, (d). Output written to {pics_dir}ex1d.png")
 
 
 if __name__ == '__main__':
