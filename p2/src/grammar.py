@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from typing import (
-    AbstractSet, Callable, Collection, Dict, List, Optional, 
+    AbstractSet, Callable, Collection, Dict, List, Optional,
     Tuple, Iterable
 )
 import copy
+from collections import deque
 
 
 class RepeatedCellError(Exception):
@@ -71,7 +72,7 @@ class Grammar:
         self.productions = productions
         self.axiom = axiom
 
-        # self.first contiene el first de cada no terminal
+        # precomputamos el first y follow de cada no terminal
         self.first = self.precompute_first()
         self.follow = self.precompute_follow()
 
@@ -83,8 +84,6 @@ class Grammar:
             f"axiom={self.axiom!r}, "
             f"productions={self.productions!r})"
         )
-
-
 
     def precompute_first(self) -> Dict[str, AbstractSet[str]]:
         """
@@ -100,7 +99,8 @@ class Grammar:
         }
 
         def add_firsts(
-            fdict: Dict[str, AbstractSet[str]], nt: str, rhs: Optional[str]
+            temporal_first:
+                Dict[str, AbstractSet[str]], nt: str, rhs: Optional[str]
         ) -> AbstractSet[str]:
             '''
             indica los first de un no terminal que añadir a su first
@@ -112,9 +112,9 @@ class Grammar:
             elif rhs[0] in self.terminals:
                 return {rhs[0]}
             else:  # rhs[0] in self.non_terminals
-                return (fdict.get(rhs[0],set()) - {""}) | (
-                    frozenset() if "" not in fdict.get(rhs[0],set())
-                    else add_firsts(fdict, nt, rhs[1:])
+                return (temporal_first.get(rhs[0], set()) - {""}) | (
+                    frozenset() if "" not in temporal_first.get(rhs[0], set())
+                    else add_firsts(temporal_first, nt, rhs[1:])
                 )
 
         # to check for changes in first
@@ -127,8 +127,6 @@ class Grammar:
                     first[nt] = first[nt] | add_firsts(first, nt, rhs)
 
         return first
-
-
 
     def compute_first(self, sentence: str) -> AbstractSet[str]:
         """
@@ -146,11 +144,9 @@ class Grammar:
             first = first | (sfirst - {""})
             if "" not in sfirst:
                 return first
-        
+
         return first | {""}
 
-
-        
     def compute_first_symbol(self, symbol: str) -> AbstractSet[str]:
         """
         Method to compute the first set of a non-terminal/terminal symbol.
@@ -165,10 +161,8 @@ class Grammar:
             return {symbol}
         if symbol in self.non_terminals:
             return self.first.get(symbol, set())
-        
+
         raise ValueError(f"Invalid symbol: {symbol}.")
-
-
 
     def precompute_follow(self) -> Dict[str, AbstractSet[str]]:
         """
@@ -188,14 +182,12 @@ class Grammar:
                 for rhs in nt_rhs:
                     for i, s in enumerate(rhs):
                         if s in self.non_terminals:
-                            next_first = self.compute_first(rhs[i+1:])
+                            next_first = self.compute_first(rhs[i + 1:])
                             follow[s] = follow[s] | (next_first - {""}) | (
                                 frozenset() if "" not in next_first
                                 else follow[nt]
                             )
         return follow
-
-
 
     def compute_follow(self, symbol: str) -> AbstractSet[str]:
         """
@@ -210,10 +202,8 @@ class Grammar:
 
         if symbol in self.non_terminals:
             return self.follow.get(symbol, set())
-        
+
         raise ValueError(f"Invalid symbol: {symbol}.")
-
-
 
     def get_ll1_table(self) -> Optional[LL1Table]:
         """
@@ -224,22 +214,20 @@ class Grammar:
         """
 
         table = LL1Table(
-            non_terminals=self.non_terminals, 
-            terminals=self.terminals|{"$"}
+            non_terminals=self.non_terminals,
+            terminals=self.terminals | {"$"}
         )
-        
+
         for nt, nt_rhs in self.productions.items():
             for rhs in nt_rhs:
                 first_rhs = self.compute_first(rhs)
-                for term in first_rhs-{""}:
-                    table.add_cell(nt,term,rhs)
+                for term in first_rhs - {""}:
+                    table.add_cell(nt, term, rhs)
                 if "" in first_rhs:
                     for term in self.compute_follow(nt):
-                        table.add_cell(nt,term,rhs)
+                        table.add_cell(nt, term, rhs)
 
         return table
-      
-
 
     def is_ll1(self) -> bool:
         return self.get_ll1_table() is not None
@@ -330,49 +318,48 @@ class LL1Table:
             SyntaxError: if the input string is not syntactically correct.
         """
 
-        
         if any(terminal not in self.terminals for terminal in input_string):
             raise SyntaxError(
                 "Input string contains symbols not included in the grammar.",
             )
 
-        # init stack (symbol,id). id references its parse tree 
-        stack: List[Tuple[str, int]] = list(((start,0), ("$",-1)))
+        # init stack (symbol,id). id references its parse tree
+        stack: deque = deque(list((("$", -1), (start, 0))))
         idcount: int = 1
         # dictionary contains id: parse tree
-        id_tree_dict: Dict[int, ParseTree] = {0:ParseTree(start,[])}
-        
+        id_tree_dict: Dict[int, ParseTree] = {0: ParseTree(start, [])}
+
         while stack and input_string:
             next_symbol = input_string[0]
-            stack_top, stack_top_id = stack.pop(0)
-            
+            stack_top, stack_top_id = stack.pop()
+
             if stack_top in self.non_terminals:
                 if self.cells[stack_top][next_symbol] is None:
                     raise SyntaxError(
                         f"There is no rule associated \
                         to ({stack_top}, {next_symbol}).")
 
-                ids:Callable[[],Iterable[int]] = \
-                    lambda: range(idcount,idcount+len(rhs))
-                rhs_ids: Callable[[],Iterable[Tuple[str, int]]] = \
-                    lambda: zip(rhs, ids())
+                ids: Callable[[], Iterable[int]] = \
+                    lambda: range(idcount, idcount + len(rhs_list))
+                rhs_ids: Callable[[], Iterable[Tuple[str, int]]] = \
+                    lambda: zip(rhs_list, ids())
 
                 # Add rhs of production to the stack
-                rhs = list(self.cells[stack_top][next_symbol] or [])
-                stack = list(rhs_ids()) + stack
-                
-                rhs = rhs if rhs else [""]  # in case rhs="λ"
+                rhs_list = list(self.cells[stack_top][next_symbol] or [])
+                stack.extend(list(rhs_ids())[::-1])
+
+                rhs_list = rhs_list if rhs_list else [""]  # in case rhs="λ"
 
                 # Create sub-ParseTrees for each symbol in the rhs
                 # And add them as children of stack_top
-                for _sym, _id in rhs_ids():
-                    id_tree_dict[_id] = ParseTree(_sym if _sym else "λ",[])
-                
+                for symbol_, id_ in rhs_ids():
+                    id_tree_dict[id_] = ParseTree(symbol_ if symbol_ else "λ", [])
+
                 id_tree_dict[stack_top_id].add_children([
                     id_tree_dict[i] for i in ids()
                 ])
 
-                idcount += len(rhs)
+                idcount += len(rhs_list)
             else:
                 if stack_top != next_symbol:
                     raise SyntaxError(
