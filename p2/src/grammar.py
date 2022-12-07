@@ -73,8 +73,8 @@ class Grammar:
         self.axiom = axiom
 
         # precomputamos el first y follow de cada no terminal
-        self.first = self.precompute_first()
-        self.follow = self.precompute_follow()
+        self.first: Dict[str, AbstractSet[str]] = {}
+        self.follow: Dict[str, AbstractSet[str]] = {}
 
     def __repr__(self) -> str:
         return (
@@ -85,7 +85,7 @@ class Grammar:
             f"productions={self.productions!r})"
         )
 
-    def precompute_first(self) -> Dict[str, AbstractSet[str]]:
+    def _precompute_first(self) -> Dict[str, AbstractSet[str]]:
         """
         Method to compute the first set of all non-terminal symbols.
 
@@ -128,26 +128,7 @@ class Grammar:
 
         return first
 
-    def compute_first(self, sentence: str) -> AbstractSet[str]:
-        """
-        Method to compute the first set of a string.
-
-        Args:
-            str: string whose first set is to be computed.
-
-        Returns:
-            First set of str.
-        """
-        first: AbstractSet[str] = frozenset()
-        for s in sentence:
-            sfirst = self.compute_first_symbol(s)
-            first = first | (sfirst - {""})
-            if "" not in sfirst:
-                return first
-
-        return first | {""}
-
-    def compute_first_symbol(self, symbol: str) -> AbstractSet[str]:
+    def _compute_first_of_symbol(self, symbol: str) -> AbstractSet[str]:
         """
         Method to compute the first set of a non-terminal/terminal symbol.
 
@@ -164,7 +145,30 @@ class Grammar:
 
         raise ValueError(f"Invalid symbol: {symbol}.")
 
-    def precompute_follow(self) -> Dict[str, AbstractSet[str]]:
+    def compute_first(self, sentence: str) -> AbstractSet[str]:
+        """
+        Method to compute the first set of a string.
+
+        Args:
+            str: string whose first set is to be computed.
+
+        Returns:
+            First set of str.
+        """
+
+        if not self.first:
+            self.first = self._precompute_first()
+
+        first: AbstractSet[str] = frozenset()
+        for s in sentence:
+            sfirst = self._compute_first_of_symbol(s)
+            first = first | (sfirst - {""})
+            if "" not in sfirst:
+                return first
+
+        return first | {""}
+
+    def _precompute_follow(self) -> Dict[str, AbstractSet[str]]:
         """
         Method to compute the follow set of all non-terminal symbols.
         """
@@ -199,6 +203,8 @@ class Grammar:
         Returns:
             Follow set of symbol.
         """
+        if not self.follow:
+            self.follow = self._precompute_follow()
 
         if symbol in self.non_terminals:
             return self.follow.get(symbol, set())
@@ -323,7 +329,7 @@ class LL1Table:
                 "Input string contains symbols not included in the grammar.",
             )
 
-        # init stack: contains (symbol,id) elements. 
+        # init stack: contains (symbol,id) elements.
         # where id references the symbol's parse tree
         stack: deque = deque(list((("$", -1), (start, 0))))
         idcount: int = 1
