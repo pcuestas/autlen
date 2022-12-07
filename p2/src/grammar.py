@@ -340,26 +340,26 @@ class LL1Table:
                         to ({stack_top}, {next_symbol}).")
 
                 ids: Callable[[], Iterable[int]] = \
-                    lambda: range(idcount, idcount + len(rhs_list))
-                rhs_ids: Callable[[], Iterable[Tuple[str, int]]] = \
-                    lambda: zip(rhs_list, ids())
+                    lambda: range(idcount, idcount + len(rhs))
+                zip_rhs_ids: Callable[[], Iterable[Tuple[str, int]]] = \
+                    lambda: zip(rhs, ids())
 
                 # Add rhs of production to the stack
-                rhs_list = list(self.cells[stack_top][next_symbol] or [])
-                stack.extend(list(rhs_ids())[::-1])
+                rhs = list(self.cells[stack_top][next_symbol] or [])
+                stack.extend(list(zip_rhs_ids())[::-1])
 
-                rhs_list = rhs_list if rhs_list else [""]  # in case rhs="λ"
+                rhs = rhs if rhs else [""]  # in case rhs="λ"
 
                 # Create sub-ParseTrees for each symbol in the rhs
                 # And add them as children of stack_top
-                for symbol_, id_ in rhs_ids():
-                    id_tree_dict[id_] = ParseTree(symbol_ if symbol_ else "λ", [])
+                for sym_, id_ in zip_rhs_ids():
+                    id_tree_dict[id_] = ParseTree(sym_ if sym_ else "λ", [])
 
                 id_tree_dict[stack_top_id].add_children([
                     id_tree_dict[i] for i in ids()
                 ])
 
-                idcount += len(rhs_list)
+                idcount += len(rhs)
             else:
                 if stack_top != next_symbol:
                     raise SyntaxError(
