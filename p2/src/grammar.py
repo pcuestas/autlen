@@ -323,7 +323,8 @@ class LL1Table:
                 "Input string contains symbols not included in the grammar.",
             )
 
-        # init stack (symbol,id). id references its parse tree
+        # init stack: contains (symbol,id) elements. 
+        # where id references the symbol's parse tree
         stack: deque = deque(list((("$", -1), (start, 0))))
         idcount: int = 1
         # dictionary contains id: parse tree
