@@ -331,7 +331,7 @@ class LL1Table:
 
         # init stack: contains (symbol,id) elements.
         # where id references the symbol's parse tree
-        stack: deque = deque(list((("$", -1), (start, 0))))
+        stack: deque[Tuple[str, int]] = deque(list((("$", -1), (start, 0))))
         idcount: int = 1
         # dictionary contains id: parse tree
         id_tree_dict: Dict[int, ParseTree] = {0: ParseTree(start, [])}
